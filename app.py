@@ -136,9 +136,15 @@ def login_page():
                         if email and password:
                             try:
                                 with st.spinner("Verifying credentials..."):
+                                    import time
+                                    start_t = time.time()
                                     user = authenticate_user(email, password)
-                                
+                                    latency = time.time() - start_t
+                                    
                                 if user:
+                                    # Show latency toast (helping user diagnose)
+                                    st.toast(f"⚡ Logged in in {latency:.2f}s", icon="🚀")
+                                    
                                     login_session(user)
                                     st.success(f"✅ Welcome back, {user['full_name']}!")
                                     st.rerun()

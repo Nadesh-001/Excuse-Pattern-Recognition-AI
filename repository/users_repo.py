@@ -146,11 +146,16 @@ def update_user(user_id, full_name, email, role, active_status):
         cursor.close()
         conn.close()
 
-def delete_user(user_id):
+    finally:
+        cursor.close()
+        conn.close()
+
+def update_password_hash(user_id, new_hash):
+    """Update only the password hash for a user (e.g. for re-hashing)."""
     conn = get_conn()
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM users WHERE id=%s", (user_id,))
+        cursor.execute("UPDATE users SET password_hash=%s WHERE id=%s", (new_hash, user_id))
         conn.commit()
     finally:
         cursor.close()

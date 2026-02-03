@@ -26,23 +26,35 @@ def authenticate_user(email, password):
         print(f"⚠️ Login attempt for deactivated account: {email}")
         raise ValueError("Account deactivated. Please contact administrator.")
         
-    if verify_password(password, user['password_hash']):
-        log_activity(user['id'], "LOGIN", f"User {user['full_name']} logged in")
-        
-        # Load permissions into session (RBAC)
-        import streamlit as st
-        st.session_state.user_role = user['role']
-        st.session_state.user_id = user['id']
-        st.session_state.org_id = user.get('org_id')
-        load_user_permissions()
-        
-        # Audit log
-        log_action(AuditActions.USER_LOGIN, f"Successful login from {email}")
-        
-        print(f"✅ Successful login: {email}")
-        return user
-    else:
-        print(f"⚠️ Failed login attempt: {email} (incorrect password)")
+    # Passlib verify
+    try:
+        if verify_password(password, user['password_hash']):
+            log_activity(user['id'], "LOGIN", f"User {user['full_name']} logged in")
+            
+            # 🚀 OPTIMIZATION: Check if hash needs update (e.g. reducing rounds from 12 to 10)
+            from utils.hashing import pwd_context, hash_password
+            if pwd_context.needs_update(user['password_hash']):
+                print(f"🔄 Migrating password hash for user {user['id']} to faster complexity...")
+                new_hash = hash_password(password)
+                from repository.users_repo import update_password_hash
+                update_password_hash(user['id'], new_hash)
+            
+            # Load permissions into session (RBAC)
+            import streamlit as st
+            st.session_state.user_role = user['role']
+            st.session_state.user_id = user['id']
+            st.session_state.org_id = user.get('org_id')
+            load_user_permissions()
+            
+            # Audit log
+            log_action(AuditActions.USER_LOGIN, f"Successful login from {email}")
+            
+            print(f"✅ Successful login: {email}")
+            return user
+        else:
+            print(f"⚠️ Failed login attempt: {email} (incorrect password)")
+    except Exception as e:
+        print(f"Auth Error: {e}")
         
     return None
 
