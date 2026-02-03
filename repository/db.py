@@ -16,28 +16,26 @@ def get_db_config():
         "ssl_disabled": False
     }
 
-# Global pool variable
-pool = None
-
+# Use st.cache_resource to persist the pool across reruns
+@st.cache_resource
 def get_pool():
-    global pool
-    if pool is None:
-        config = get_db_config()
-        # Ensure ssl_ca exists, if not, might need to adjust path or disable ssl if local
-        if not os.path.exists(config["ssl_ca"]):
-             # Fallback for local dev if pem missing, but production usually needs it for TiDB
-             print(f"Warning: SSL Cert not found at {config['ssl_ca']}")
-             
-        try:
-            pool = pooling.MySQLConnectionPool(
-                pool_name="app_pool",
-                pool_size=5,
-                **config
-            )
-        except mysql.connector.Error as err:
-            print(f"Error creating connection pool: {err}")
-            raise err
-    return pool
+    config = get_db_config()
+    
+    # Ensure ssl_ca exists, if not, might need to adjust path or disable ssl if local
+    if not os.path.exists(config["ssl_ca"]):
+            # Fallback for local dev if pem missing, but production usually needs it for TiDB
+            print(f"Warning: SSL Cert not found at {config['ssl_ca']}")
+            
+    try:
+        pool = pooling.MySQLConnectionPool(
+            pool_name="app_pool",
+            pool_size=5,
+            **config
+        )
+        return pool
+    except mysql.connector.Error as err:
+        print(f"Error creating connection pool: {err}")
+        raise err
 
 def get_conn():
     """Get a connection from the pool."""
