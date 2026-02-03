@@ -11,6 +11,10 @@ def authenticate_user(email, password):
     if not email or not password:
         raise ValueError("Email and password are required")
     
+    # Clean inputs
+    email = email.strip()
+    password = password.strip()
+    
     user = get_user_by_email(email)
     
     if not user:
