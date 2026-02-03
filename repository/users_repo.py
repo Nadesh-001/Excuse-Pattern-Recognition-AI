@@ -146,9 +146,7 @@ def update_user(user_id, full_name, email, role, active_status):
         cursor.close()
         conn.close()
 
-    finally:
-        cursor.close()
-        conn.close()
+
 
 def update_password_hash(user_id, new_hash):
     """Update only the password hash for a user (e.g. for re-hashing)."""
