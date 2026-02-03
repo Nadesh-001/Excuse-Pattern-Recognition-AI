@@ -132,12 +132,9 @@ with tab_users:
                                 user_to_delete = df_users[df_users['id']==delete_user_id].iloc[0]
                                 
                                 # Manually delete related records to verify Foreign Keys
-                                # 1. Permissions
-                                cursor.execute("DELETE FROM role_permissions WHERE role=%s", (user_to_delete['role'],)) # Wait, permissions are by role, typically not user specific unless overwritten. 
-                                # Actually the error was audit_logs.
                                 cursor.execute("DELETE FROM audit_logs WHERE user_id=%s", (delete_user_id,))
                                 cursor.execute("DELETE FROM delays WHERE user_id=%s", (delete_user_id,))
-                                cursor.execute("DELETE FROM tasks WHERE assigned_to=%s", (delete_user_id,)) # Assuming tasks link to user
+                                cursor.execute("DELETE FROM tasks WHERE assigned_to=%s", (delete_user_id,))
                                 
                                 # Delete user coverage
                                 cursor.execute("DELETE FROM users WHERE id=%s", (delete_user_id,))
