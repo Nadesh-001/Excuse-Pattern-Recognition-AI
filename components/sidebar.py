@@ -1,61 +1,131 @@
 import streamlit as st
-import datetime
-import os
+from services.permission_service import has_permission, Permissions
 
-def load_icon(name):
-    try:
-        with open(f"assets/icons/{name}.svg", "r") as f:
-            return f.read()
-    except:
-        return ""
-
-def render_sidebar():
-    # Hide default sidebar nav
+def render_sidebar(active_page="Dashboard"):
+    """
+    Render a modern sidebar with permission-based navigation.
+    
+    Args:
+        active_page: The currently active page name
+    """
+    
+    # Sidebar button styling
     st.markdown("""
-        <style>
-            [data-testid="stSidebarNav"] {display: none;}
-        </style>
+    <style>
+    section[data-testid="stSidebar"] button {
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #334155;
+        border-radius: 8px;
+        width: 100%;
+        margin: 2px 0;
+    }
+    
+    section[data-testid="stSidebar"] button:hover {
+        background-color: #f1f5f9;
+    }
+    
+    section[data-testid="stSidebar"] button:focus {
+        outline: none;
+    }
+    </style>
     """, unsafe_allow_html=True)
-
+    
     with st.sidebar:
-        # Logo Area
-        logo = load_icon("logo")
+        # App Title
+        st.markdown('<div class="sidebar-title">🤖 EPR AI</div>', unsafe_allow_html=True)
+        
+        # --- ACCOUNT BOX ---
+        user_name = st.session_state.get('user_name', 'Guest User')
+        user_role = st.session_state.get('user_role', 'employee')
+        
+        # Role badge styling
+        role_display = user_role.capitalize()
+        role_class = f"role-{user_role.lower()}"
+        
         st.markdown(f"""
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-            <div style="width: 40px; height: 40px;">{logo}</div>
-            <h2 style="margin:0; font-size: 20px;">ExcuseAI</h2>
+        <div class="account-box">
+            <div class="account-name">{user_name}</div>
+            <div class="account-role">
+                <span class="role-badge {role_class}">{role_display}</span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
         
-        # User Profile
-        st.write(f"**{st.session_state.user_name}**")
-        st.caption(f"{st.session_state.user_role.capitalize()}")
-        st.divider()
-
-        # Custom Navigation
-        nav_items = [
-            ("Dashboard", "pages/1_Dashboard.py", "dashboard"),
-            ("My Tasks", "pages/2_Tasks.py", "tasks"),
-            ("Analytics", "pages/3_Analytics.py", "analytics"),
-            ("AI Assistant", "pages/4_Chatbot.py", "chatbot"),
-            ("Search", "pages/6_Search.py", "search")
-        ]
-
-        if st.session_state.user_role == 'admin':
-             nav_items.insert(4, ("Admin Panel", "pages/5_Admin_Panel.py", "admin"))
-
-        for label, page, icon_name in nav_items:
-            icon_svg = load_icon(icon_name)
-            # Use columns for icon + text layout
-            c1, c2 = st.columns([1, 4])
-            with c1:
-                st.markdown(f'<div style="width: 24px;">{icon_svg}</div>', unsafe_allow_html=True)
-            with c2:
-                if st.button(label, key=f"nav_{icon_name}", use_container_width=True):
-                    st.switch_page(page)
+        st.markdown("---")
         
-        st.divider()
-        logout_icon = load_icon("login") # Reusing login icon for logout style
-        if st.button("Logout", use_container_width=True):
-            st.session_state.logged_in = False
-            st.rerun()
+        # OVERVIEW Section
+        st.markdown('<div class="sidebar-section">OVERVIEW</div>', unsafe_allow_html=True)
+        
+        # Dashboard - everyone has access
+        if has_permission(Permissions.VIEW_DASHBOARD):
+            if st.button("📈 Dashboard", key="nav_dashboard", use_container_width=True):
+                st.switch_page("pages/1_Dashboard.py")
+        
+        # Tasks - everyone has access
+        if has_permission(Permissions.VIEW_TASKS):
+            if st.button("✅ Tasks", key="nav_tasks", use_container_width=True):
+                st.switch_page("pages/2_Tasks.py")
+        
+        # Analytics - managers and admins only
+        if has_permission(Permissions.VIEW_ANALYTICS):
+            if st.button("📊 Analytics", key="nav_analytics", use_container_width=True):
+                st.switch_page("pages/3_Analytics.py")
+        
+        # AI Section
+        st.markdown('<div class="sidebar-section">AI</div>', unsafe_allow_html=True)
+        
+        if has_permission(Permissions.USE_CHATBOT):
+            if st.button("🤖 Chatbot", key="nav_chatbot", use_container_width=True):
+                st.switch_page("pages/4_Chatbot.py")
+        
+        # MANAGEMENT Section - only for managers and admins
+        if has_permission(Permissions.MANAGE_EMPLOYEES):
+            st.markdown('<div class="sidebar-section">MANAGEMENT</div>', unsafe_allow_html=True)
+            
+            if st.button("👥 Employee Profiles", key="nav_profiles", use_container_width=True):
+                st.switch_page("pages/7_Employee_Profiles.py")
+        
+        # SYSTEM Section - only for admins
+        if has_permission(Permissions.ADMIN_PANEL):
+            st.markdown('<div class="sidebar-section">SYSTEM</div>', unsafe_allow_html=True)
+            
+            if st.button("🔍 Search", key="nav_search", use_container_width=True):
+                st.switch_page("pages/6_Search.py")
+            
+            if st.button("⚙️ Admin Panel", key="nav_admin", use_container_width=True):
+                st.switch_page("pages/5_Admin_Panel.py")
+            
+            # Audit Logs - admin only
+            if has_permission(Permissions.VIEW_AUDIT_LOGS):
+                if st.button("📜 Audit Logs", key="nav_audit", use_container_width=True):
+                    st.switch_page("pages/9_Audit_Logs.py")
+        
+        # --- ACCOUNT OPTIONS ---
+        st.markdown("---")
+        
+        # Profile - everyone can edit their own profile
+        if has_permission(Permissions.EDIT_PROFILE):
+            if st.button("👤 Profile", key="nav_profile", use_container_width=True):
+                st.switch_page("pages/8_Profile.py")
+        
+        # Logout Button
+        if st.button("🚪 Logout", key="nav_logout", use_container_width=True):
+            # Import audit service to log logout
+            from services.audit_service import log_action, AuditActions
+            
+            # Log logout
+            log_action(AuditActions.USER_LOGOUT, f"User logged out")
+            
+            # Clear session
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            # Redirect to Landing Page
+            st.switch_page("app.py")
+
+
+

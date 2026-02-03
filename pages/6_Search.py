@@ -1,18 +1,16 @@
 import streamlit as st
 import pandas as pd
-from utils.helpers import init_session_state
+from utils.session import require_auth
 from components.styling import apply_custom_css
 from components.sidebar import render_sidebar
-from database.connection import get_db_connection
+from repository.db import get_conn
 
 # Page Config
 st.set_page_config(page_title="Search", page_icon="🔍", layout="wide")
-init_session_state()
-if not st.session_state.logged_in:
-    st.switch_page("app.py")
+require_auth()
 
 apply_custom_css()
-render_sidebar()
+render_sidebar(active_page="Search")
 
 st.title("🔍 Universal Search")
 
@@ -29,7 +27,7 @@ with col3:
     filter_status = st.multiselect("Status/Risk", ["Pending", "Completed", "Delayed", "High Risk", "Low Risk"], default=[])
 
 if search_term:
-    conn = get_db_connection()
+    conn = get_conn()
     results_found = False
     
     # 1. Search Tasks
@@ -42,7 +40,7 @@ if search_term:
         params_tasks = [f"%{search_term}%", f"%{search_term}%"]
         
         # Add basic role filtering (Employees see own, Managers see all)
-        if st.session_state.user_role == 'employee':
+        if st.session_state.role == 'employee':
             query_tasks += " AND assigned_to = %s"
             params_tasks.append(st.session_state.user_id)
             
@@ -71,7 +69,7 @@ if search_term:
         """
         params_delays = [f"%{search_term}%"]
         
-        if st.session_state.user_role == 'employee':
+        if st.session_state.role == 'employee':
             query_delays += " AND d.user_id = %s"
             params_delays.append(st.session_state.user_id)
             

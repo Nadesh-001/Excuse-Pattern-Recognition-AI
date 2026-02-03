@@ -1,86 +1,1450 @@
-
 # Excuse Pattern Recognition AI - User Manual
 
-Welcome to the Excuse Pattern Recognition AI & Task Management System. This guide will help you navigate and utilize all features effectively.
-
-## 🚀 Getting Started
-
-### 1. Login
-- Navigate to the main page.
-- Enter your **Email** and **Password**.
-- Click **Login**.
-- *Note:* If you don't have an account, switch to the "Sign Up" tab to register.
-
----
-
-## 📊 Dashboard
-The Dashboard provides a real-time overview of your performance or team status.
-
-- **Overview Cards**: View pending tasks, delays, and risk scores at a glance.
-- **Recent Activity**: Detailed log of system updates and notifications.
-- **Quick Actions**: One-click buttons to jump to common tasks like "New Task".
+## Table of Contents
+1. [Overview](#overview)
+2. [Getting Started](#getting-started)
+3. [User Roles](#user-roles)
+4. [Features by Role](#features-by-role)
+5. [Detailed Feature Guide](#detailed-feature-guide)
+6. [Dark Mode](#dark-mode)
+7. [FAQ](#faq)
 
 ---
 
-## 📝 Task Management
+## Overview
 
-### Assigning a New Task (Managers/Admins)
-1. Go to **My Tasks** or click **New Task** on the Dashboard.
-2. Expand the **➕ Create New Task** section.
-3. Fill in the details:
-    - **Title & Description**: Be clear and concise.
-    - **Assign to User ID**: Enter the ID of the employee (found in Admin Panel).
-    - **Deadline & Priority**: Set expectations.
-4. **Smart Attachments**:
-    - **Files**: Upload PDF, DOCX, or TXT files. The AI will analyze them.
-    - **URL**: Paste a link to external resources.
-5. Click **Create Task**.
-    - *Notification:* An email will be automatically sent to the assigned user.
+*Excuse Pattern Recognition AI* is an intelligent task management and delay analysis system powered by AI. The system helps organizations:
 
-### Viewing & Managing Tasks (Employees)
-1. Go to **My Tasks**.
-2. Browse the list of tasks assigned to you.
-3. Click **Details** on any task to view description and attachments.
-4. **Attachments**: Click headers to expand. You can read AI summaries and extracted deadlines.
-5. **Mark as Done**: If completed, go to the "✅ Mark Complete" tab and click the button.
+- ✅ Assign and track tasks efficiently
+- 🤖 Analyze delay reasons using AI
+- 📊 Monitor team performance and patterns
+- ⏱️ Track time spent on tasks
+- 🎯 Identify genuine vs suspicious delay patterns
+
+### Key Technologies
+- *AI Analysis*: Groq AI for intelligent delay pattern recognition
+- *Data Storage*: TiDB (MySQL) Database
+- *Real-time Updates*: Automatic synchronization
+- *Multi-role Access*: Employee, Manager, and Admin roles
 
 ---
 
-## ⏳ Submitting Delays & AI Analysis
-If you cannot meet a deadline, you must submit an excuse which is analyzed by AI.
+## Getting Started
 
-1. Open the **Task Details**.
-2. Switch to the **⏳ Submit Delay Excuse** tab.
-3. **Reason**: Type your explanation. Be specific!
-4. **Voice Input (Optional)**: Upload a voice note explaining the delay. The system will transcribe it.
-5. Click **Submit Excuse**.
+### First Time Login
 
-### AI Feedback
-The system immediately analyzes your excuse for:
-- **Authenticity Score**: How truthful the excuse sounds.
-- **Risk Level**: Low/Medium/High risk of future delays.
-- **Avoidance**: Whether you are taking responsibility or shifting blame.
+1. *Access the Application*
+   - Open your browser and navigate to: http://localhost:8501
+   - You'll see the login page
 
----
+2. *Default Admin Credentials*
+   - Email: admin@example.com
+   - Password: admin123
+   - ⚠️ *Important*: Change the password after first login
 
-## 🤖 AI Chatbot
-Use the AI Assistant for help or general queries.
-
-1. Navigate to **AI Assistant**.
-2. Type your question in the chat box.
-3. The AI (powered by advanced LLMs) will respond.
-    - *Tip:* You can ask about effective time management or clarification on company policies.
+3. *Dark Mode Toggle*
+   - Located in the sidebar
+   - Click "🌙 Dark Mode" to switch themes
+   - Preference is saved for your session
 
 ---
 
-## ⚙️ Settings & Customization
-The application supports a **Dark/Light Theme**.
-- The system automatically detects your OS preference, but defaults to a premium **Dark Mode** with Glassmorphism effects.
+## User Roles
+
+The system has three distinct roles with different permissions:
+
+### 👤 Employee
+*Access Level*: Basic
+- View assigned tasks
+- Submit delay reports
+- Chat with AI for excuse validation
+- View personal analytics
+- Export personal reports
+
+### 👔 Manager
+*Access Level*: Team Management
+- All Employee features
+- Create and assign tasks to employees
+- View team analytics
+- Monitor employee performance
+- Track task timers
+- View employee profiles
+- Export team reports
+
+### 👑 Admin
+*Access Level*: Full System Control
+- All Manager features
+- Create and manage users (Employees, Managers, Admins)
+- View system-wide analytics
+- Access all tasks and delays
+- View activity logs
+- Full data export capabilities
 
 ---
 
-## 📧 Email Notifications
-- You will receive emails when:
-    - A new task is assigned to you.
-    - (Coming Soon) A deadline is approaching.
-- Ensure your email address in your profile is correct.
+## Features by Role
+
+### 👤 Employee Dashboard
+
+#### 1. *My Tasks*
+View all tasks assigned to you with:
+- Task title and description
+- Priority level (High/Medium/Low)
+- Deadline and overdue warnings
+- Status tracking
+
+#### 2. *Submit Delay*
+When a task is delayed:
+1. Click "⏰ Submit Delay" on the task
+2. Provide detailed reason
+3. AI analyzes authenticity (0-100%)
+4. Categorizes delay type
+5. Assigns risk level
+6. Provides recommendations
+
+*AI Analysis Includes:*
+- *Authenticity Score*: How genuine the reason appears
+- *Category*: Personal, Technical, Health, etc.
+- *Risk Level*: Low/Medium/High
+- *Patterns*: Repeated excuse detection
+- *Avoidance Score*: Likelihood of excuse-making
+
+#### 3. *Chat with AI*
+Real-time AI assistant to:
+- Validate excuses before submission
+- Get feedback on delay reasons
+- Receive suggestions for better explanations
+
+#### 4. *My Analytics*
+Personal performance metrics:
+- Total tasks assigned
+- Completion rate
+- Delay submissions
+- Average authenticity score
+- Pattern analysis
+
+---
+
+### 👔 Manager Dashboard
+
+#### 1. *Team Analytics*
+Comprehensive team overview:
+- Total tasks created
+- Delayed tasks count
+- Team average authenticity score
+- Risk distribution charts
+- Category analysis
+- Employee performance comparison
+- Timeline trends
+
+#### 2. *All Team Tasks*
+View and filter all tasks:
+- *Filters*: Status, Priority, Search
+- *Timer Tracking*: See time estimates and elapsed time
+- *Task Details*: Full information for each task
+
+*⏱️ Timer Features*:
+Each task with estimated time shows:
+- *Estimated Time*: Allocated duration (e.g., 2h 30m)
+- *Elapsed Time*: Time since creation (e.g., 1h 45m)
+- *Status Indicator*:
+  - ⏳ *X remaining* (Blue) - On track
+  - 🔴 *Over by X* (Red) - Running late
+  - ✅ *Completed on time* (Green) - Finished successfully
+  - ⚠️ *Completed over time* (Yellow) - Done but late
+
+#### 3. *Employee Profiles*
+View detailed employee information:
+- Active/Inactive status
+- Tasks assigned
+- Delay submissions
+- Performance metrics
+- Recent activity
+- Risk levels
+- *Task Management*: Delete employee tasks
+
+#### 4. *Create Task*
+Assign new tasks with:
+- Task title and description
+- Employee assignment (employees only, not other managers)
+- Priority level
+- Deadline
+- *⏱️ Estimated Time*: Set hours and minutes
+- *📎 Resources*: Attach Google Docs, Sheets, Forms, or external links
+
+*Time Estimation*:
+- Set completion time estimate
+- Helps track if tasks finish on time
+- Provides accountability
+
+#### 5. *Export Reports*
+Download data as CSV:
+- All tasks report
+- All delays report
+- Combined comprehensive report
+
+---
+
+### 👑 Admin Panel
+
+#### 1. *User Management*
+Complete user control:
+- Create new users (Employee/Manager/Admin)
+- Edit user details
+- Activate/Deactivate accounts
+- View all users with filters
+- Search functionality
+
+*Create User Process*:
+1. Click "Add New User"
+2. Enter name, email, password
+3. Select role
+4. Set active status
+5. User receives credentials
+
+#### 2. *System Analytics*
+Full system overview:
+- Total users by role
+- Active users count
+- Total tasks
+- Total delays
+- System-wide patterns
+
+#### 3. *System Diagnosis*
+Run health checks on critical components:
+- *Database*: Verifies connection pool and query health
+- *AI Services*: Checks API key validity for Groq/Gemini
+- *Filesystem*: Verifies upload directory permissions
+- *Environment*: Shows current OS and Python environment details
+
+
+#### 3. *All Tasks & Delays*
+Access to all data:
+- View all tasks across organization
+- Monitor all delay submissions
+- Filter and search capabilities
+
+#### 4. *Recent Activity Logs*
+Audit trail showing:
+- User actions
+- Timestamps
+- Activity types
+- Last 20 activities
+
+---
+
+## Detailed Feature Guide
+
+### AI Delay Analysis
+
+When an employee submits a delay, the AI analyzes:
+
+#### Authenticity Score (0-100%)
+- *80-100%*: Highly authentic, genuine reason
+- *50-79%*: Moderately authentic, needs verification
+- *0-49%*: Low authenticity, potential excuse
+
+#### Categories
+- 🏥 *Health*: Medical issues, illness
+- 👨👩👧 *Personal*: Family matters, personal commitments
+- 🔧 *Technical*: System issues, tool problems
+- 🚦 *External*: Traffic, weather, infrastructure
+- 📚 *Workload*: Too many tasks, complexity
+- 💬 *Communication*: Unclear requirements, miscommunication
+- 🎯 *Other*: Uncategorized reasons
+
+#### Risk Levels
+- 🟢 *Low*: Genuine, acceptable delay
+- 🟡 *Medium*: Requires attention
+- 🔴 *High*: Suspicious pattern, needs investigation
+
+#### Avoidance Score
+Measures responsibility avoidance tendency:
+- High score = Likely making excuses
+- Low score = Taking responsibility
+
+---
+
+### Task Timer System
+
+*For Managers*: Track task progress in real-time
+
+#### How It Works:
+1. *Create Task*: Set estimated time (e.g., 2h 30m)
+2. *Timer Starts*: Begins counting from creation
+3. *Monitor Progress*: View in "All Team Tasks"
+4. *Track Completion*: See if task finished on time
+
+#### Timer Display:
+
+⏱️ Estimated    ⏰ Elapsed    📊 Status
+   2h 30m         1h 45m      ⏳ 45m remaining
+
+
+#### Status Types:
+- *On Track*: Time remaining shown
+- *Overtime*: How much over estimate
+- *Completed on Time*: Finished within estimate
+- *Completed Over Time*: Finished but exceeded estimate
+
+---
+
+### Dark Mode
+
+Toggle between light and dark themes:
+
+*Activation*:
+1. Look for theme toggle in sidebar
+2. Click "🌙 Dark Mode" or "☀️ Light Mode"
+3. Entire interface switches instantly
+
+*Features*:
+- Auto-adjusts all colors
+- High contrast for readability
+- Preserves role-specific colors
+- Reduces eye strain
+
+*Areas Covered*:
+- Login page
+- Dashboards
+- Forms
+- Tables
+- Charts
+- Task cards
+- Modals
+
+---
+
+### Resource Attachment
+
+Attach helpful resources to tasks:
+
+*Supported Types*:
+- 📄 Google Docs
+- 📊 Google Sheets
+- 📋 Google Forms
+- 📄 Microsoft Word (external links)
+- 📊 Microsoft Excel (external links)
+- 🔗 Any external link
+
+*How to Attach*:
+1. When creating a task, find "📎 Attach Resources"
+2. Paste URL
+3. Add optional custom title
+4. Resource appears in task details
+
+---
+
+### Export Functionality
+
+Download data for offline analysis:
+
+*Available Reports*:
+1. *Tasks Report*: All task data
+2. *Delays Report*: All delay submissions with AI analysis
+3. *Combined Report*: Tasks + Delays merged
+
+*Format*: CSV (Excel compatible)
+
+*Data Included*:
+- All relevant fields
+- Timestamps
+- AI analysis results
+- User information
+
+---
+
+## Common Workflows
+
+### As an Employee
+
+#### Workflow 1: Complete a Task
+1. Login to Employee Dashboard
+2. View "My Tasks"
+3. Click "View Details" on task
+4. Complete the work
+5. If delayed, click "Submit Delay"
+
+#### Workflow 2: Submit Delay
+1. Find overdue task
+2. Click "⏰ Submit Delay"
+3. Write detailed reason
+4. Submit for AI analysis
+5. Review AI feedback
+6. Adjust behavior based on recommendations
+
+---
+
+### As a Manager
+
+#### Workflow 1: Create a Task
+1. Go to "Create Task" tab
+2. Fill task details
+3. Set estimated time
+4. Assign to employee
+5. Attach resources if needed
+6. Submit
+
+#### Workflow 2: Monitor Team
+1. Check "Team Analytics" for overview
+2. View "All Team Tasks" for details
+3. Monitor timer status
+4. Check "Employee Profiles" for individual performance
+5. Export reports for presentations
+
+#### Workflow 3: Track Task Progress
+1. Go to "All Team Tasks"
+2. Look at timer section
+3. Identify overdue tasks (🔴 red status)
+4. Identify on-track tasks (⏳ blue status)
+5. Take action on concerning patterns
+
+---
+
+### As an Admin
+
+#### Workflow 1: Create New User
+1. Go to "User Management"
+2. Click "Add New User"
+3. Enter details
+4. Select appropriate role
+5. Activate user
+6. Share credentials
+
+#### Workflow 2: Monitor System
+1. Check "System Analytics"
+2. Review "Recent Activity Logs"
+3. Investigate suspicious patterns
+4. View all tasks and delays
+5. Export comprehensive reports
+
+---
+
+## Dark Mode
+
+### Enabling Dark Mode
+- Located in sidebar: Click "🌙 Dark Mode"
+- Toggle anytime during session
+- Preference saved per session
+
+### Dark Mode Features
+- All UI elements adapt
+- High contrast text
+- Reduced eye strain
+- Maintains color schemes for priorities, statuses
+- Works across all pages and roles
+
+---
+
+## FAQ
+
+### General Questions
+
+*Q: How do I reset my password?*
+A: Contact your admin for password reset.
+
+*Q: Can I see tasks assigned to other employees?*
+A: Only if you're a Manager or Admin.
+
+*Q: How accurate is the AI analysis?*
+A: The AI uses advanced language models with 85%+ accuracy.
+
+### For Employees
+
+*Q: Will my manager see my delay reasons?*
+A: Yes, managers can view all delay submissions.
+
+*Q: Can I delete a delay submission?*
+A: No, all submissions are permanent for audit purposes.
+
+*Q: What if I disagree with the AI authenticity score?*
+A: Discuss with your manager; the score is a guide, not final judgment.
+
+### For Managers
+
+*Q: Can I assign tasks to other managers?*
+A: No, you can only assign to employees.
+
+*Q: How is elapsed time calculated?*
+A: From task creation timestamp to current time.
+
+*Q: Can I edit a task after creation?*
+A: Currently, no. Delete and recreate if needed.
+
+*Q: What if an employee consistently has low authenticity scores?*
+A: This indicates a pattern. Have a discussion about expectations.
+
+### For Admins
+
+*Q: Can I bulk import users?*
+A: Not currently. Add users individually.
+
+*Q: How do I back up data?*
+A: Data is stored in the cloud database. Regular exports are recommended.
+
+*Q: Can I deactivate an admin account?*
+A: Yes, but ensure at least one admin remains active.
+
+---
+
+## Best Practices
+
+### For Employees
+1. ✅ Submit delays as soon as you know
+2. ✅ Be honest and detailed in reasons
+3. ✅ Use AI chat for validation before submission
+4. ✅ Learn from AI feedback
+5. ✅ Maintain good authenticity scores
+
+### For Managers
+1. ✅ Set realistic time estimates
+2. ✅ Monitor timer status regularly
+3. ✅ Address overdue patterns quickly
+4. ✅ Review employee profiles weekly
+5. ✅ Use analytics for team improvements
+6. ✅ Attach resources to complex tasks
+
+### For Admins
+1. ✅ Review activity logs regularly
+2. ✅ Monitor system-wide patterns
+3. ✅ Maintain user accounts actively
+4. ✅ Export reports for backups
+5. ✅ Investigate high-risk patterns
+
+---
+
+## Support
+
+For technical issues or questions:
+- Check this manual first
+- Review AI_MODELS_GUIDE.md for AI configuration
+- Contact your system administrator
+- Report bugs with screenshots and error messages
+
+---
+Feature Documentation - Excuse Pattern Recognition AI
+
+## Document Overview
+This document provides technical and functional details of all features in the Excuse Pattern Recognition AI system.
+
+---
+
+## Table of Contents
+1. [System Architecture](#system-architecture)
+2. [Authentication & Security](#authentication--security)
+3. [Role-Based Access Control](#role-based-access-control)
+4. [Core Features](#core-features)
+5. [AI Integration](#ai-integration)
+6. [Timer & Time Tracking](#timer--time-tracking)
+7. [UI/UX Features](#uiux-features)
+8. [Data Management](#data-management)
+9. [Reporting & Analytics](#reporting--analytics)
+
+---
+
+## System Architecture
+
+### Technology Stack
+- *Frontend*: Streamlit (Python web framework)
+- *Backend*: Python 3.8+
+- *Database*: MySQL / TiDB Cloud
+- *AI Engine*: Groq API (openai/gpt-oss-20b model)
+- *Authentication*: Custom session-based authentication
+
+### Data Flow
+
+User Input → Streamlit UI → Python Backend → MySQL Database
+                ↓
+          AI Analysis (Groq)
+                ↓
+          Results Display
+
+
+### Database Structure (Tables)
+1. *Users*: User accounts and credentials
+2. *Tasks*: Task assignments and tracking
+3. *Delays*: Delay submissions and AI analysis
+4. *Resources*: Attached files and links
+5. *ActivityLogs*: System activity audit trail
+
+---
+
+## Authentication & Security
+
+### Feature: User Login
+*Purpose*: Secure access to the system
+
+*Functionality*:
+- Email and password authentication
+- Password hashing using industry-standard algorithms
+- Session management via Streamlit session state
+- Role-based redirection after login
+
+*Security Measures*:
+- Passwords stored as hashes in Database
+- CSRF protection enabled
+- Session timeout on browser close
+- Role validation on every page load
+
+### Feature: User Session Management
+*State Management*:
+- User data stored in st.session_state.user
+- Includes: name, email, role, active status
+- Persists across page refreshes
+- Cleared on logout
+
+---
+
+## Role-Based Access Control (RBAC)
+
+### Three-Tier Role System
+
+#### 1. Employee Role
+*Permissions*:
+- ✅ View own tasks
+- ✅ Submit delay reports
+- ✅ Chat with AI
+- ✅ View personal analytics
+- ✅ Export own data
+- ❌ Create tasks
+- ❌ View other users' data
+- ❌ Manage users
+
+#### 2. Manager Role
+*Permissions*:
+- ✅ All Employee permissions
+- ✅ Create and assign tasks
+- ✅ View team analytics
+- ✅ Monitor all employees
+- ✅ View employee profiles
+- ✅ Track task timers
+- ✅ Export team reports
+- ❌ Create/manage users
+- ❌ View system-wide data (other teams)
+
+#### 3. Admin Role
+*Permissions*:
+- ✅ All Manager permissions
+- ✅ Create/edit/delete users
+- ✅ View system-wide analytics
+- ✅ Access all tasks and delays
+- ✅ View activity logs
+- ✅ Full data export
+- ✅ System configuration
+
+### Implementation
+- Role checked on page render: if user['role'] != config.ROLE_XXX
+- Sidebar navigation filtered by role
+- API calls validate user role before execution
+
+---
+
+## Core Features
+
+### 1. Task Management
+
+#### Feature: Create Task (Manager/Admin)
+*Location*: Manager/Admin Dashboard → Create Task tab
+
+*Form Fields*:
+- *Task Title** (required): Short description
+- *Description*: Detailed task information
+- *Assign To** (required): Employee email dropdown
+  - Only shows active employees
+  - Excluded: Managers and Admins
+- *Priority** (required): Low/Medium/High
+- *Deadline** (required): Date picker
+- *Estimated Time*: Hours and Minutes
+  - Hours: 0-999
+  - Minutes: 0-59 (in 15-min increments)
+- *Resource URL* (optional): External link
+- *Resource Title* (optional): Custom name for resource
+
+*Validation*:
+- All required fields checked
+- URL validation for resources
+- Employee availability check
+- Unique task ID generation
+
+*Storage*:
+Added to Tasks table with:
+- Unique ID
+- Creation timestamp
+- Status: "Pending" (default)
+- Assigned by: Current user email
+
+*Time Estimation Format*:
+Stored in description or dedicated column.
+
+#### Feature: View Tasks
+*Employee View*:
+- Filters tasks by assigned_to_email == user.email
+- Shows only own tasks
+
+*Manager View*:
+- Shows all tasks in organization
+- Filterable by:
+  - Status (All/Pending/Completed/Delayed)
+  - Priority (All/High/Medium/Low)
+  - Search text (title or email)
+
+*Display Components*:
+- Task card with colored border (priority-based)
+- Title and status badge
+- Description preview (150 chars)
+- Priority, Deadline, Assigned to
+- Timer section (if estimated time exists)
+- Action buttons (View Details, Submit Delay)
+
+#### Feature: Task Timer (Manager Only)
+*Calculation*:
+python
+elapsed_time = current_time - task_creation_time
+remaining_time = estimated_time - elapsed_time
+
+
+*Display*:
+Three boxes showing:
+1. *Estimated Time*: From task creation
+2. *Elapsed Time*: Auto-calculated
+3. *Status*: Dynamic based on comparison
+
+*Status Logic*:
+- Task Pending + Elapsed < Estimated = "⏳ X remaining" (Blue)
+- Task Pending + Elapsed > Estimated = "🔴 Over by X" (Red)
+- Task Completed + Elapsed ≤ Estimated = "✅ Completed on time" (Green)
+- Task Completed + Elapsed > Estimated = "⚠️ Completed over time" (Yellow)
+
+*Time Formatting*:
+- Minutes only: "45m"
+- Hours + Minutes: "2h 30m"
+- Days + Hours + Minutes: "3d 5h 20m"
+
+---
+
+### 2. Delay Management
+
+#### Feature: Submit Delay (Employee)
+*Trigger*: Task is overdue (deadline < current date) and status ≠ Completed
+
+*Process*:
+1. Click "⏰ Submit Delay" on task card
+2. Modal/Form opens
+3. Enter detailed reason (text area)
+4. Submit for AI analysis
+5. AI processes in real-time
+6. Results displayed immediately
+
+*AI Analysis Pipeline*:
+
+Reason Text → Groq AI API → JSON Response
+    ↓
+Parse: authenticity, category, risk, avoidance
+    ↓
+Store in Delays table
+    ↓
+Display results to user
+
+
+*Stored Data*:
+- Delay ID (unique)
+- Task ID (reference)
+- User email
+- Reason text
+- AI analysis results:
+  - Authenticity score (0-100)
+  - Category
+  - Risk level
+  - Avoidance score
+  - Recommendations
+- Creation timestamp
+
+#### Feature: AI Chat (Employee)
+*Purpose*: Pre-validate excuses before submission
+
+*Functionality*:
+- Real-time chat interface
+- Same AI model as delay analysis
+- Provides feedback without storing
+- Helps employees improve their explanations
+
+*Use Cases*:
+- "Is this reason acceptable?"
+- "How can I explain this better?"
+- "What category does this fall under?"
+
+---
+
+### 3. User Management (Admin Only)
+
+#### Feature: Create User
+*Location*: Admin Panel → User Management → Add New User
+
+*Form Fields*:
+- *Name** (required)
+- *Email** (required, unique)
+- *Password** (required, auto-hashed)
+- *Role** (required): Employee/Manager/Admin
+- *Active Status*: Checkbox (default: True)
+
+*Validation*:
+- Email uniqueness check
+- Password strength (minimum 6 characters)
+- Role selection validation
+- Format validation for email
+
+*Process*:
+- SQL UPDATE/INSERT operations
+- Check email doesn't exist
+- Hash password
+- Add to Users table with timestamp
+- Log activity
+
+*Post-Creation*:
+- User can immediately login
+- Appears in user list
+- Included in role-specific filters
+
+#### Feature: Edit User
+*Editable Fields*:
+- Name
+- Email (if unique)
+- Role
+- Active status
+- Password (optional)
+
+*Restrictions*:
+- Cannot delete own admin account
+- Cannot delete the *only* remaining Administrator (Safety Lock)
+
+*Active Status*:
+- Toggle users as Active/Inactive
+- Inactive users are immediate blocked from logging in
+- Useful for offboarding employees without deleting data
+
+#### Feature: View Users
+*Display*:
+- Filterable by role
+- Searchable by name/email
+- Shows status (active/inactive)
+- Displays last login
+- Expandable for details
+
+---
+
+### 4. Analytics & Reporting
+
+#### Feature: Employee Analytics
+*Metrics*:
+- Total tasks assigned
+- Tasks by status (Pending/Completed/Delayed)
+- Total delay submissions
+- Average authenticity score
+- Risk distribution
+- Category breakdown
+
+*Visualizations*:
+- Pie charts for risk levels
+- Bar charts for categories
+- Timeline of delays
+- Performance trends
+
+#### Feature: Team Analytics (Manager)
+*Metrics*:
+- Team-wide task count
+- Delayed tasks percentage
+- Team average authenticity
+- Employee comparison
+- Pattern identification
+
+*Charts*:
+- Risk distribution pie chart
+- Category bar chart
+- Employee performance comparison
+- Timeline trend analysis
+
+#### Feature: System Analytics (Admin)
+*Metrics*:
+- Total users by role
+- Active vs inactive users
+- Total tasks across system
+- Total delays
+- System-wide patterns
+
+*Insights*:
+- High-risk users
+- Frequent delay categories
+- Team performance comparison
+- Usage statistics
+
+---
+
+## AI Integration
+
+### AI Model Configuration
+
+*Provider*: Groq
+*Model*: openai/gpt-oss-20b
+*Settings*:
+- Temperature: 0.7 (balanced creativity vs consistency)
+- Max Tokens: 2048
+- Response Format: JSON
+
+### Feature: Delay Analysis AI
+
+#### Input Processing
+python
+prompt = f"""
+Analyze this delay reason: "{reason_text}"
+Task: {task_title}
+User: {user_email}
+
+Provide:
+1. Authenticity score (0-100)
+2. Category
+3. Risk level
+4. Avoidance score
+5. Recommendations
+"""
+
+
+#### Output Format (JSON)
+json
+{
+  "authenticity_score": 75,
+  "category": "Technical",
+  "risk_level": "Medium",
+  "avoidance_score": 35,
+  "recommendations": "Verify technical details..."
+}
+
+
+#### Analysis Criteria
+
+*Authenticity Score*:
+- Language specificity (vague vs detailed)
+- Emotional tone
+- Responsibility taking
+- Previous submission patterns
+- Timing consistency
+
+*Categories*:
+1. *Health*: Medical conditions, illness
+2. *Personal*: Family, personal emergencies
+3. *Technical*: Software, hardware, network issues
+4. *External*: Weather, transportation, infrastructure
+5. *Workload*: Too many tasks, complexity
+6. *Communication*: Requirements unclear, miscommunication
+7. *Other*: Doesn't fit above categories
+
+*Risk Levels*:
+- *Low*: Authenticity > 70%, taking responsibility
+- *Medium*: Authenticity 40-70%, some concerns
+- *High*: Authenticity < 40%, suspicious patterns
+
+*Avoidance Score*:
+- Measures responsibility avoidance
+- Based on language patterns
+- High score = external blame, no ownership
+- Low score = internal attribution, accountability
+
+---
+
+## Timer & Time Tracking
+
+### Feature: Task Time Estimation
+
+#### Creation
+*When*: Task creation by Manager/Admin
+*Interface*: Number inputs for hours and minutes
+
+*Storage*:
+Embedded in task description or separate column.
+
+*Parsing*:
+Regex extraction:
+python
+time_match = re.search(r'⏱️ Estimated Time:\s*(.+)', description)
+hours = re.search(r'(\d+)h', time_str)
+minutes = re.search(r'(\d+)m', time_str)
+
+
+### Feature: Elapsed Time Calculation
+
+#### Real-time Calculation
+python
+created_at = datetime.strptime(task['created_at'], "%Y-%m-%d %H:%M:%S")
+elapsed = datetime.now() - created_at
+elapsed_minutes = int(elapsed.total_seconds() / 60)
+
+
+#### Display Formatting
+python
+if elapsed_days > 0:
+    display = f"{days}d {hours}h {mins}m"
+elif elapsed_hours > 0:
+    display = f"{hours}h {mins}m"
+else:
+    display = f"{mins}m"
+
+
+### Feature: Time Status Indicator
+
+#### Status Determination
+python
+if status == 'Completed':
+    if elapsed <= estimated:
+        status = "✅ Completed on time"
+    else:
+        status = "⚠️ Completed over time"
+elif elapsed > estimated:
+    overtime = elapsed - estimated
+    status = f"🔴 Over by {format_time(overtime)}"
+else:
+    remaining = estimated - elapsed
+    status = f"⏳ {format_time(remaining)} remaining"
+
+
+#### Color Coding
+- *Blue* (#3b82f6): On track, time remaining
+- *Red* (#ef4444): Overtime, concerning
+- *Green* (#10b981): Completed on time, success
+- *Yellow* (#f59e0b): Completed over time, warning
+
+---
+
+## UI/UX Features
+
+### Feature: Dark Mode
+
+#### Toggle Mechanism
+*Location*: Sidebar
+*State*: Session-based (resets on logout)
+
+*Implementation*:
+python
+if 'dark_mode' not in st.session_state:
+    st.session_state.dark_mode = False
+
+if st.button("🌙 Dark Mode" if not st.session_state.dark_mode else "☀️ Light Mode"):
+    st.session_state.dark_mode = not st.session_state.dark_mode
+    st.rerun()
+
+
+#### CSS Injection
+Conditional stylesheet:
+python
+if st.session_state.dark_mode:
+    st.markdown(dark_mode_css, unsafe_allow_html=True)
+
+
+#### Styled Elements
+- Background colors
+- Text colors
+- Form elements
+- Cards and containers
+- Charts and graphs
+- Modals and popups
+- Sidebar and header
+- Tables and data displays
+
+#### Color Scheme
+*Dark Mode*:
+- Background: #1a1d24
+- Cards: #1e222a
+- Text: #fafafa
+- Borders: #2d3139
+
+*Preserved Colors*:
+- Priority indicators (High/Medium/Low)
+- Status badges (Pending/Completed/Delayed)
+- Risk levels (High/Medium/Low)
+- Role theme colors
+
+### Feature: Role-Specific Theming
+
+#### Color Schemes
+*Employee* (Blue):
+- Primary: #3b82f6
+- Background: #dbeafe
+- Icon: 👤
+
+*Manager* (Purple):
+- Primary: #8b5cf6
+- Background: #f5f3ff
+- Icon: 👔
+
+*Admin* (Orange):
+- Primary: #f59e0b
+- Background: #fef3c7
+- Icon: 👑
+
+#### Application
+- Header gradient
+- Sidebar profile card
+- Navigation cards
+- Metric cards
+- Status indicators
+
+### Feature: Responsive Task Cards
+
+#### Structure
+html
+<div style="border-left: 4px solid {priority_color}">
+  Title + Status Badge
+  Description Preview
+  Priority | Deadline | Assigned To
+  Timer Section (if applicable)
+  Action Buttons
+</div>
+
+
+#### Interactive Elements
+- Expandable details
+- Clickable action buttons
+- Hover effects
+- Status badges
+- Priority indicators
+
+---
+
+## Data Management
+
+### Feature: Database Integration
+
+#### Connection
+- MySQL / TiDB Cloud
+- Credentials from `.env` or `secrets.toml`
+- Secure TLS connection
+
+#### Database Operations
+*Read*:
+python
+cursor.execute("SELECT * FROM ...")
+
+
+*Write*:
+python
+cursor.execute("INSERT INTO ...")
+
+
+*Update*:
+python
+cursor.execute("UPDATE ...")
+
+
+*Delete*:
+python
+cursor.execute("DELETE FROM ...")
+
+
+#### Data Synchronization
+- Real-time read on page load
+- Immediate write on form submission
+- Transaction support (commit/rollback)
+
+### Feature: Activity Logging
+
+#### Logged Actions
+- User login/logout
+- Task creation
+- Task deletion
+- Delay submission
+- User creation/edit
+- Role changes
+
+#### Log Structure
+
+ID | User Email | Action Type | Description | Timestamp
+1  | manager@ex | create_task | Created: Review | 2026-01-28 12:00
+
+
+#### Retention
+- Last 50 activities shown
+- All activities stored permanently
+- Admin-only access
+
+---
+
+## Reporting & Analytics
+
+### Feature: Data Export
+
+#### Export Types
+1. *Tasks Report*
+   - All task fields
+   - Assignment details
+   - Time tracking data
+   - Resources attached
+
+2. *Delays Report*
+   - Delay reasons
+   - AI analysis results
+   - User information
+   - Timestamps
+
+3. *Combined Report*
+   - Tasks + Delays merged
+   - Full relationship data
+   - Comprehensive analysis
+
+#### Format
+- CSV (Comma-Separated Values)
+- Excel-compatible
+- UTF-8 encoding
+- Headers included
+
+#### Access Control
+- Employee: Own data only
+- Manager: Team data
+- Admin: All data
+
+---
+
+## Security Features
+
+### 1. Password Security
+- Hashing algorithm: Industry-standard
+- Salted hashes
+- No plaintext storage
+- Secure comparison
+
+### 2. Session Security
+- Session tokens
+- CSRF protection
+- XSS prevention
+- Secure cookies
+
+### 3. Data Privacy
+- Role-based data filtering
+- Query-level security
+- Audit trail
+- Activity logging
+
+### 4. Input Validation
+- SQL injection prevention
+- XSS filtering
+- URL validation
+- Email format validation
+- Length restrictions
+
+---
+
+## Performance Features
+
+### Optimization Techniques
+1. *Lazy Loading*: Load data only when tab is accessed
+2. *Caching*: Streamlit's built-in caching (@st.cache_data)
+3. *Pagination*: Limit results to recent entries
+4. *Efficient Queries*: Filter data at source
+5. *Asynchronous AI*: Non-blocking AI calls
+
+### Scalability
+- TiDB: Cloud scale SQL
+- Streamlit: Handles concurrent users
+- AI API: Rate limits via Groq account
+
+---
+
+## Error Handling
+
+### User-Facing Errors
+- Clear error messages
+- Helpful suggestions
+- Retry mechanisms
+- Fallback options
+
+### Technical Errors
+- Try-catch blocks
+- Error logging
+- Graceful degradation
+- User notification
+
+---
+
+## Future Enhancements
+
+### Planned Features
+1. Email notifications
+2. WebSocket real-time updates
+3. Advanced analytics dashboard
+4. Bulk task creation
+5. Custom AI training
+6. Mobile app
+7. Slack/Teams integration
+8. Calendar sync
+9. Automated task assignment
+10. Performance reviews
+
+---
+
+## Technical Requirements
+
+### Minimum Requirements
+- Python 3.8+
+- Internet connection
+- Modern web browser
+- Database Connection (TiDB/MySQL)
+- Groq API key
+
+### Recommended
+- Python 3.10+
+- Chrome/Edge browser
+- Stable internet (for AI)
+
+---
+
+## API Documentation
+
+### Groq AI API
+
+*Endpoint*: https://api.groq.com/v1/chat/completions
+
+*Headers*:
+json
+{
+  "Authorization": "Bearer {GROQ_API_KEY}",
+  "Content-Type": "application/json"
+}
+
+
+*Request*:
+json
+{
+  "model": "openai/gpt-oss-20b",
+  "messages": [...],
+  "temperature": 0.7,
+  "max_tokens": 2048
+}
+
+
+*Response*:
+json
+{
+  "choices": [{
+    "message": {
+      "content": "{JSON analysis}"
+    }
+  }]
+}
+
+
+### Database
+
+*Service*: TiDB / MySQL
+*Auth*: User/Password/Host/Port/SSL
+
+---
+
+
+---
+
+## Best Practices: Task Management Checklist
+
+This practical checklist helps you maximize the Excuse Pattern Recognition AI system and minimize delay patterns.
+
+### 10-Step Task Management Framework
+
+| Step | Action | Benefits & App Integration |
+|------|--------|---------------------------|
+| **1. Capture Everything** | Create a single, searchable task list in the app | Eliminates "lost tasks" excuses. The app surfaces tasks that were added but never opened or completed. |
+| **2. Prioritize Clearly** | Use Eisenhower (urgent vs. important) or ABC method (A=must, B=should, C=nice-to-have) | Reduces "didn't know which to tackle first" excuses. The app tags tasks by priority and reminds you of overdue high-priority items. |
+| **3. Break Down Big Jobs** | Divide each task into sub-tasks with mini-deadlines | Prevents "too many steps" excuses. The app shows number of sub-tasks left, making next steps obvious. |
+| **4. Set Realistic Time Windows** | Estimate effort for each sub-task; add 10-15% buffer | Avoids "ran out of time" excuses. The app tracks actual vs. estimated time, highlighting chronic over-estimation. |
+| **5. Automate Reminders** | Use calendar invites, recurring notifications, or app's auto-reminder feature | Stops "I forgot" excuses. The app logs when reminders were triggered and whether tasks were acted on. |
+| **6. Review Daily/Weekly** | End of day: tick off completed tasks. End of week: audit why tasks lagged | Turns excuses into data. The app generates "Delay Pattern" reports, highlighting recurring excuse types. |
+| **7. Delegate Wisely** | Assign tasks to others with clear ownership and due dates | Removes "couldn't complete it" excuses by sharing responsibility. The app flags unassigned or stuck tasks. |
+| **8. Use Excuse Log** | When tasks delay, add brief notes: "Technical hiccup", "Awaiting feedback", etc. | Turns vague excuses into actionable insights. The app aggregates notes, showing most common barriers. |
+| **9. Celebrate Small Wins** | Add quick "celebrate" tick or emoji when sub-tasks complete | Positive reinforcement reduces procrastination. The app tracks streaks and completion rates for motivation. |
+| **10. Leverage Data** | After 30 days, review app reports: Which excuses appear most? Which tasks are always overdue? | Fine-tunes your workflow. Adjust priorities, deadlines, or processes based on evidence, not assumptions. |
+
+### How the App Supports Each Step
+
+#### Capture (Step 1)
+- **Feature**: Centralized task dashboard
+- **Benefit**: All tasks visible in one place
+- **Excuse Prevention**: No more "I didn't see it" or "It wasn't assigned to me"
+
+#### Prioritize (Step 2)
+- **Feature**: Priority tags (High/Medium/Low) with color coding
+- **Benefit**: Visual priority hierarchy
+- **Excuse Prevention**: Eliminates confusion about task importance
+
+#### Break Down (Step 3)
+- **Feature**: Task descriptions with detailed requirements
+- **Benefit**: Clear action items and sub-steps
+- **Excuse Prevention**: Reduces "task was too complex" excuses
+
+#### Time Windows (Step 4)
+- **Feature**: Estimated time tracking with timer display
+- **Benefit**: Real-time progress monitoring
+- **Excuse Prevention**: Catches time overruns early
+
+#### Reminders (Step 5)
+- **Feature**: Deadline tracking with visual indicators
+- **Benefit**: Proactive deadline awareness
+- **Excuse Prevention**: Eliminates "forgot the deadline" excuses
+
+#### Review (Step 6)
+- **Feature**: Analytics dashboard with delay patterns
+- **Benefit**: Data-driven insights into performance
+- **Excuse Prevention**: Identifies recurring excuse patterns
+
+#### Delegate (Step 7)
+- **Feature**: Task assignment with clear ownership
+- **Benefit**: Accountability tracking
+- **Excuse Prevention**: No ambiguity about responsibility
+
+#### Excuse Log (Step 8)
+- **Feature**: AI-powered delay analysis with categorization
+- **Benefit**: Structured excuse documentation
+- **Excuse Prevention**: Patterns become visible over time
+
+#### Celebrate (Step 9)
+- **Feature**: Completion tracking and status updates
+- **Benefit**: Visible progress and achievements
+- **Excuse Prevention**: Builds momentum and motivation
+
+#### Leverage Data (Step 10)
+- **Feature**: Comprehensive reports and export functionality
+- **Benefit**: Evidence-based process improvement
+- **Excuse Prevention**: Continuous system refinement
+
+### Quick Action Plan for Today
+
+1. **Open the app** and create a new "Backlog" task
+2. **Add your current top 3 tasks** with priorities
+3. **Set realistic deadlines** (add 15% buffer to your estimates)
+4. **Assign each task** a priority (A/B/C or High/Medium/Low)
+5. **When you complete a task**, mark it done immediately
+6. **At day's end**, use the app's "Weekly Snapshot" to see what tasks lagged and why
+
+### 30-Day Challenge
+
+**Week 1**: Capture all tasks in the app  
+**Week 2**: Add time estimates to every task  
+**Week 3**: Review delay patterns in Analytics  
+**Week 4**: Adjust your workflow based on data
+
+Give it a try and see how the data-feedback loop changes your approach to task management. Happy task-tackling!
+
+---
+
+## Changelog
+
+### Version 1.0 (January 2026)
+- Initial release
+- Core task management
+- AI delay analysis
+- Multi-role system
+- Dark mode
+- Timer tracking
+- Export functionality
+- User management
+
+### Version 2.0 (February 2026)
+- **Production Architecture**: Complete refactoring to N-Tier Design (Services/Repository)
+- **System Diagnosis**: Built-in health check tools for Admin
+- **Advanced Admin Controls**: User activation/deactivation, Last Admin protection
+- **Performance**: Connection pooling and optimized query handling
+

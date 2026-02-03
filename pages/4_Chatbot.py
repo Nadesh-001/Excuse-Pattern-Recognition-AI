@@ -4,6 +4,16 @@ import os
 import google.generativeai as genai
 from groq import Groq
 from dotenv import load_dotenv
+from utils.session import require_auth
+from components.styling import apply_custom_css
+from components.sidebar import render_sidebar
+
+# Page Config
+st.set_page_config(page_title="AI Chatbot", page_icon="🤖", layout="wide")
+require_auth()
+
+apply_custom_css()
+render_sidebar(active_page="Chatbot")
 
 # Load Environment Variables
 load_dotenv()
@@ -49,6 +59,7 @@ def get_ai_response(prompt, context=""):
 
 # --- Page Logic ---
 st.title("🤖 AI Assistant")
+st.markdown("<p style='color: #64748b; margin-top: -10px; margin-bottom: 20px;'>Your intelligent companion for task tracking and excuse pattern analysis.</p>", unsafe_allow_html=True)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -69,7 +80,7 @@ if prompt := st.chat_input("Ask me anything about your tasks, delays, or pattern
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             # Context builder
-            user_context = f"User: {st.session_state.user_name} ({st.session_state.user_role})"
+            user_context = f"User: {st.session_state.user_name} ({st.session_state.role})"
             response = get_ai_response(prompt, context=user_context)
             
             st.markdown(response)

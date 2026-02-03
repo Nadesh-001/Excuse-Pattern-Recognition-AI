@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('employee', 'manager', 'admin') DEFAULT 'employee',
+    active_status BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -18,7 +19,9 @@ CREATE TABLE IF NOT EXISTS tasks (
     status VARCHAR(50) DEFAULT 'Pending',
     priority VARCHAR(50) DEFAULT 'Medium',
     deadline DATE,
+    estimated_minutes INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completion_timestamp TIMESTAMP NULL COMMENT 'Formula 1: Used to calculate elapsed_time',
     FOREIGN KEY (assigned_to) REFERENCES users(id),
     FOREIGN KEY (created_by) REFERENCES users(id)
 );
@@ -43,11 +46,12 @@ CREATE TABLE IF NOT EXISTS delays (
     user_id INT,
     reason_text TEXT,
     reason_audio_path TEXT,
-    score_authenticity INT, 
-    score_avoidance INT,
-    risk_level VARCHAR(50), -- 'Low', 'Medium', 'High'
-    ai_feedback TEXT,
-    ai_analysis_json JSON,
+    score_authenticity INT COMMENT 'Formula 11: Rule-based score (0-100)', 
+    score_avoidance INT COMMENT 'Formula 12: 100 - authenticity',
+    risk_level VARCHAR(50) COMMENT 'Formulas 16-18: Low/Medium/High based on delay_count', 
+    ai_feedback TEXT COMMENT 'Supplementary AI feedback (not used for scoring)',
+    ai_analysis_json JSON COMMENT 'Stores rule breakdown and category',
+    delay_duration INT DEFAULT 0 COMMENT 'Formula 4: elapsed_time - estimated_time (minutes)',
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (task_id) REFERENCES tasks(id),
     FOREIGN KEY (user_id) REFERENCES users(id)

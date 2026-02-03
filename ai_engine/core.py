@@ -74,3 +74,66 @@ def analyze_delay_reason(reason_text, user_history_summary="No prior history"):
             "risk_level": "Medium",
             "analysis": "AI Analysis Unavailable. Manual review required."
         }
+
+def get_chatbot_response(user_message, conversation_history=None):
+    """
+    Get chatbot response using Groq (Primary) or Gemini (Fallback).
+    Returns AI assistant response as string.
+    """
+    
+    # Build messages for context
+    messages = []
+    
+    # System prompt
+    system_prompt = """You are a helpful AI assistant for a task management system. 
+    Help users with:
+    - Task management and organization
+    - Time management tips
+    - Productivity advice
+    - Understanding delay patterns
+    - General work-related questions
+    
+    Be concise, helpful, and professional."""
+    
+    # Add conversation history if provided
+    if conversation_history:
+        messages = conversation_history
+    
+    # 1. Try Groq (Primary)
+    try:
+        if not GROQ_API_KEY:
+            raise ValueError("No Groq Key")
+        
+        client = Groq(api_key=GROQ_API_KEY)
+        
+        # Build messages
+        chat_messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message}
+        ]
+        
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=chat_messages,
+            temperature=0.7,
+            max_tokens=500
+        )
+        
+        return completion.choices[0].message.content
+        
+    except Exception as e:
+        print(f"Groq Chatbot Failed: {e}")
+    
+    # 2. Fallback to Gemini
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        
+        # Build prompt with context
+        full_prompt = f"{system_prompt}\n\nUser: {user_message}\n\nAssistant:"
+        
+        response = model.generate_content(full_prompt)
+        return response.text
+        
+    except Exception as e:
+        print(f"Gemini Chatbot Failed: {e}")
+        return "I apologize, but I'm having trouble connecting to the AI service right now. Please try again later or contact support if the issue persists."
