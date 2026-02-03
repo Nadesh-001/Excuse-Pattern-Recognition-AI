@@ -135,7 +135,9 @@ def login_page():
                     if submit:
                         if email and password:
                             try:
-                                user = authenticate_user(email, password)
+                                with st.spinner("Verifying credentials..."):
+                                    user = authenticate_user(email, password)
+                                
                                 if user:
                                     login_session(user)
                                     st.success(f"✅ Welcome back, {user['full_name']}!")
