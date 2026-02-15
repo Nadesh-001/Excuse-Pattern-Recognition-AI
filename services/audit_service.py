@@ -7,7 +7,7 @@ Provides functions to:
 - Track user activities
 """
 
-import streamlit as st
+from flask import session
 from datetime import datetime
 from repository.db import get_conn
 
@@ -21,7 +21,7 @@ def log_action(action: str, details: str = None, target_user_id: int = None):
         target_user_id: Optional ID of affected user (for role changes, etc.)
     """
     try:
-        user_id = st.session_state.get('user_id')
+        user_id = session.get('user_id')
         
         if not user_id:
             return  # Can't log without a user

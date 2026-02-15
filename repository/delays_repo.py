@@ -1,102 +1,82 @@
-from .db import get_conn
-import mysql.connector
+from .db import execute_query, get_db_cursor
 import json
 
 def create_delay(task_id, user_id, reason_text, reason_audio_path, score_authenticity, score_avoidance, risk_level, ai_feedback, ai_analysis_json, delay_duration=0, proof_path=None):
     """Create delay record with validation."""
-    # ... (validations ok) ...
-    # ... 
-    
-    conn = get_conn()
-    cursor = conn.cursor()
     try:
-        # Ensure json is stringified
+        # Ensure json is stringified for JSONB column or just passed as dict (psycopg2 handles dict to jsonb automatically often, but explicit dumps is safer for text fields)
         if isinstance(ai_analysis_json, dict):
             ai_analysis_json = json.dumps(ai_analysis_json)
-        elif ai_analysis_json and not isinstance(ai_analysis_json, str):
-            raise ValueError("AI analysis must be a dict or JSON string")
             
-        cursor.execute("""
-            INSERT INTO delays (task_id, user_id, reason_text, reason_audio_path, score_authenticity, score_avoidance, risk_level, ai_feedback, ai_analysis_json, delay_duration, proof_path)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (task_id, user_id, reason_text.strip(), reason_audio_path, score_authenticity, score_avoidance, risk_level, ai_feedback, ai_analysis_json, delay_duration, proof_path))
-        conn.commit()
-        return cursor.lastrowid
-    except mysql.connector.Error as e:
-        conn.rollback()
-        raise Exception(f"Database error creating delay: {str(e)}")
+        with get_db_cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO delays (task_id, user_id, reason_text, reason_audio_path, score_authenticity, score_avoidance, risk_level, ai_feedback, ai_analysis_json, delay_duration, proof_path)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (task_id, user_id, reason_text.strip(), reason_audio_path, score_authenticity, score_avoidance, risk_level, ai_feedback, ai_analysis_json, delay_duration, proof_path))
+            
+            result = cursor.fetchone()
+            if result:
+                return result['id']
+            raise Exception("Failed to get new delay ID")
     except Exception as e:
-        conn.rollback()
-        raise Exception(f"Failed to create delay: {str(e)}")
-    finally:
-        cursor.close()
-        conn.close()
+        print(f"Error creating delay: {e}")
+        raise
 
 def get_delays_all():
-    conn = get_conn()
-    cursor = conn.cursor(dictionary=True)
-    try:
-        query = """
-            SELECT d.*, t.title as task_title, u.email as user_email
-            FROM delays d
-            LEFT JOIN tasks t ON d.task_id = t.id
-            LEFT JOIN users u ON d.user_id = u.id
-            ORDER BY d.submitted_at DESC
-        """
-        cursor.execute(query)
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()
+    query = """
+        SELECT d.*, t.title as task_title, u.email as user_email
+        FROM delays d
+        LEFT JOIN tasks t ON d.task_id = t.id
+        LEFT JOIN users u ON d.user_id = u.id
+        ORDER BY d.submitted_at DESC
+    """
+    return execute_query(query)
 
 def get_delays_by_user(user_id):
-    conn = get_conn()
-    cursor = conn.cursor(dictionary=True)
+    query = """
+        SELECT d.*, t.title as task_title 
+        FROM delays d
+        LEFT JOIN tasks t ON d.task_id = t.id
+        WHERE d.user_id = %s
+        ORDER BY d.submitted_at DESC
+    """
+    return execute_query(query, (user_id,))
+
+def get_user_delay_history(user_id, limit=5):
+    """Formula 10: Get recent delays for behavioral consistency."""
     try:
-        query = """
-            SELECT d.*, t.title as task_title 
+        return execute_query("""
+            SELECT 
+                d.id, 
+                d.reason_text, 
+                d.score_authenticity, 
+                d.score_avoidance, 
+                d.risk_level, 
+                d.ai_analysis_json, 
+                d.delay_duration, 
+                d.submitted_at,
+                t.deadline
             FROM delays d
             LEFT JOIN tasks t ON d.task_id = t.id
             WHERE d.user_id = %s
             ORDER BY d.submitted_at DESC
-        """
-        cursor.execute(query, (user_id,))
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()
-
-def get_user_delay_history(user_id, limit=5):
-    """Formula 10: Get recent delays for behavioral consistency."""
-    conn = get_conn()
-    cursor = conn.cursor(dictionary=True)
-    try:
-        cursor.execute("""
-            SELECT id, score_authenticity, score_avoidance, submitted_at, ai_analysis_json
-            FROM delays
-            WHERE user_id = %s
-            ORDER BY submitted_at DESC
             LIMIT %s
         """, (user_id, limit))
-        return cursor.fetchall()
-    except mysql.connector.Error as e:
+    except Exception as e:
         print(f"❌ Error fetching delay history: {e}")
         return []
-    finally:
-        cursor.close()
-        conn.close()
 
 def count_user_delays(user_id):
     """Formula 5: Count total delays for employee."""
-    conn = get_conn()
-    cursor = conn.cursor()
     try:
-        cursor.execute("SELECT COUNT(*) FROM delays WHERE user_id = %s", (user_id,))
-        result = cursor.fetchone()
-        return result[0] if result else 0
-    except mysql.connector.Error as e:
+        result = execute_query("SELECT COUNT(*) as count FROM delays WHERE user_id = %s", (user_id,), fetch=True)
+        return result[0]['count'] if result else 0
+    except Exception as e:
         print(f"❌ Error counting delays: {e}")
         return 0
-    finally:
-        cursor.close()
-        conn.close()
+
+# Alias for compatibility
+def get_all_delays():
+    """Alias for get_delays_all for compatibility."""
+    return get_delays_all()

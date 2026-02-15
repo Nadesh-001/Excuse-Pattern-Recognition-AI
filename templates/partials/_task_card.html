@@ -1,0 +1,100 @@
+<div class="task-card-mockup neon-border-{{ 'admin' if session.get('user_role') == 'admin' else ('manager' if session.get('user_role') == 'manager' else 'employee') }}"
+    style="background: var(--bg-card); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; border: 1px solid var(--border);">
+
+    <!-- Status Badge (Top Right) -->
+    <div
+        style="position: absolute; top: 1rem; right: 1.5rem; display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.1);">
+        <span
+            style="color: {% if task.status == 'Completed' %}#10b981{% elif task.status == 'Delayed' %}#ef4444{% else %}#f59e0b{% endif %}; font-size: 1.2rem;">
+            {% if task.status == 'Completed' %}✓{% elif task.status == 'Delayed' %}⚠{% else %}◷{% endif %}
+        </span>
+        <span style="font-weight: 700; font-size: 0.95rem;">{{ task.status }}</span>
+    </div>
+
+    <!-- Title & Description -->
+    <h2 style="margin: 0 0 0.5rem 0; font-size: 1.8rem; font-weight: 800;">{{ task.title }}</h2>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">{{ task.description or "No description provided" }}</p>
+
+    <!-- Metadata Row -->
+    <div
+        style="display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.95rem;">
+        <div>
+            <span style="color: var(--text-muted); font-weight: 600;">Priority:</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px;">
+                <span
+                    style="width: 10px; height: 10px; border-radius: 50%; background: {% if task.priority == 'High' %}#ef4444{% elif task.priority == 'Medium' %}#f59e0b{% else %}#10b981{% endif %};"></span>
+                {{ task.priority }}
+            </span>
+        </div>
+        <div>
+            <span style="color: var(--text-muted); font-weight: 600;">Deadline:</span> {{ task.deadline }}
+        </div>
+        {% if session.get('user_role') != 'employee' %}
+        <div>
+            <span style="color: var(--text-muted); font-weight: 600;">Assigned to:</span><br>
+            <span style="color: var(--manager-blue); text-decoration: underline;">{{ task.assigned_to_email or
+                task.assigned_to }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 3-Box Footer (Mockup Style) -->
+    <div
+        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+
+        <!-- Box 1: Estimated -->
+        <div
+            style="background: rgba(59, 130, 246, 0.05); border-radius: 0.5rem; padding: 1rem; text-align: center; border: 1px solid rgba(59, 130, 246, 0.1);">
+            <div style="font-size: 0.8rem; color: var(--manager-blue); font-weight: 600; text-transform: uppercase;">⏱
+                Estimated</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--manager-blue);">{{ task.estimated_minutes }}m
+            </div>
+        </div>
+
+        <!-- Box 2: Elapsed -->
+        <div
+            style="background: rgba(245, 158, 11, 0.05); border-radius: 0.5rem; padding: 1rem; text-align: center; border: 1px solid rgba(245, 158, 11, 0.1);">
+            <div style="font-size: 0.8rem; color: var(--admin-gold); font-weight: 600; text-transform: uppercase;">⏰
+                Elapsed</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: var(--admin-gold);">{{ task.elapsed_time }}</div>
+        </div>
+
+        <!-- Box 3: Status / Performance -->
+        <div
+            style="background: rgba(255,255,255,0.05); border-radius: 0.5rem; padding: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">📊
+                Status</div>
+            <div
+                style="font-size: 1rem; font-weight: 700; color: {% if task.badge_type == 'success' %}#10b981{% elif task.badge_type == 'warning' %}#f59e0b{% else %}#ef4444{% endif %};">
+                {% if task.badge_type == 'warning' %}⚠{% elif task.badge_type == 'danger' %}‼{% endif %}
+                {{ task.status_badge }}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- View Details Link -->
+    <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+        <a href="{{ url_for('task_details', task_id=task.id) }}"
+            style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); padding: 0.6rem 1.2rem; border-radius: 0.5rem; color: #fff; font-size: 0.9rem; text-decoration: none; font-weight: 600; transition: background 0.2s;">
+            📋 View Details
+        </a>
+
+        <!-- Inline Delete Action (Gated) -->
+        {% if session.get('user_role') in ['manager', 'admin'] or task.assigned_to == session.get('user_id') %}
+        <form method="POST" action="{{ url_for('delete_task', task_id=task.id) }}" style="margin: 0;"
+            onsubmit="return confirm('Delete this task?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit"
+                style="display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 0.6rem 1.2rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Delete
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+</div>

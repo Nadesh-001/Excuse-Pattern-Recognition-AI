@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Excuse Pattern AI{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
+{% endblock %}
+
+{% block content %}
+{% include 'partials/_dashboard_tabs.html' %}
+
+{# ------------------------------------------------------------------ #}
+{# role is passed from the route — no need to read session here #}
+{# ------------------------------------------------------------------ #}
+{% set role_class = 'role--admin' if role == 'admin' else ('role--manager' if role == 'manager' else 'role--employee')
+%}
+
+{# ---- Welcome card ---- #}
+<div class="welcome-card">
+    <div class="welcome-card__inner">
+        <div class="welcome-card__identity">
+            <div class="avatar-wrap avatar-wrap--{{ role }}">
+                <img src="https://ui-avatars.com/api/?name={{ user_name | urlencode }}&background=random"
+                    alt="{{ user_name }} avatar" class="avatar">
+            </div>
+            <div>
+                <h1 class="welcome-heading">Welcome, {{ user_name.split()[0] if user_name else 'User' }}!</h1>
+                <p class="welcome-sub">Manage your tasks and submit AI-powered delay analysis</p>
+            </div>
+        </div>
+
+        <div class="efficiency-badge">
+            <div class="efficiency-badge__label">Efficiency</div>
+            {% if counts.efficiency > 0 %}
+            {% set eff_class = 'efficiency--low' if counts.efficiency < 30 else ('efficiency--mid' if counts.efficiency
+                < 70 else 'efficiency--high' ) %} <div class="efficiency-badge__value {{ eff_class }}">{{
+                counts.efficiency }}%
+        </div>
+        {% else %}
+        <div class="efficiency-badge__value efficiency--none">—</div>
+        {% endif %}
+    </div>
+</div>
+</div>
+
+{# ---- KPI strip ---- #}
+<div class="kpi-grid kpi-grid--3col">
+    <div class="kpi-card neon-border-{{ role }}">
+        <div class="kpi-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+            </svg>
+        </div>
+        <div class="kpi-value neon-text-{{ role }}">{{ counts.delayed_tasks }}</div>
+        <div class="kpi-label">Delayed Tasks</div>
+    </div>
+
+    <div class="kpi-card neon-border-{{ role }}">
+        <div class="kpi-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+        </div>
+        <div class="kpi-value neon-text-{{ role }}">{{ counts.total_delays }}</div>
+        <div class="kpi-label">Total Delays</div>
+    </div>
+
+    <div class="kpi-card neon-border-{{ role }}">
+        <div class="kpi-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+        </div>
+        <div class="kpi-value neon-text-{{ role }}">{{ counts.auth_score }}%</div>
+        <div class="kpi-label">{{ 'Team' if role == 'manager' else 'My' }} Avg Auth</div>
+    </div>
+</div>
+
+{# ---- Two-column layout ---- #}
+<div class="dashboard-cols">
+
+    {# -- Main column -- #}
+    <div class="dashboard-cols__main">
+
+        {# Overview stat cards #}
+        <h3 class="section-heading">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                aria-hidden="true">
+                <path d="M3 3v18h18" />
+                <path d="M18 17V9" />
+                <path d="M13 17v-6" />
+                <path d="M8 17v-4" />
+            </svg>
+            Overview
+        </h3>
+
+        <div class="stat-grid">
+            <div class="card stat-card">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    aria-hidden="true">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+                    <rect x="9" y="3" width="6" height="4" rx="1" />
+                </svg>
+                <div class="stat-card__value">{{ counts.total_tasks }}</div>
+                <div class="stat-card__label">Total Tasks</div>
+            </div>
+
+            <div class="card stat-card">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"
+                    aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6v6l4 2" />
+                </svg>
+                <div class="stat-card__value stat-card__value--amber">{{ counts.pending }}</div>
+                <div class="stat-card__label">Pending</div>
+            </div>
+
+            <div class="card stat-card">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"
+                    aria-hidden="true">
+                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                    <path d="M22 4L12 14.01l-3-3" />
+                </svg>
+                <div class="stat-card__value stat-card__value--green">{{ counts.completed }}</div>
+                <div class="stat-card__label">Completed</div>
+            </div>
+        </div>
+
+        {# Active tasks #}
+        <div class="section-header-row">
+            <h3 class="section-heading section-heading--flush">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    aria-hidden="true">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                Active Tasks
+            </h3>
+            <a href="{{ url_for('tasks') }}" class="link-subtle">View all</a>
+        </div>
+
+        {# Filter and slice happens in the route; template just renders. #}
+        {% if active_tasks %}
+        {% for task in active_tasks %}
+        {% include 'partials/_task_card.html' %}
+        {% endfor %}
+        {% else %}
+        <div class="card empty-card">No pending or delayed tasks — you're all caught up!</div>
+        {% endif %}
+    </div>
+
+    {# -- Side column -- #}
+    <div class="dashboard-cols__side">
+
+        {% if role in ['manager', 'admin'] %}
+        <div class="card side-panel">
+            <div class="side-panel__label">Management Actions</div>
+            <a href="{{ url_for('new_task') }}" class="btn-primary btn-primary--block">➕ Create New Task</a>
+            <a href="{{ url_for('generate_sample_data') }}" class="btn-ghost btn-ghost--block"
+                onclick="return confirm('Use this only for demos! It will add tasks to your account.');">
+                ⚡ Load Sample Data
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="card side-panel">
+            <div class="side-panel__label">⚡ Demo Role Switcher</div>
+            <div class="role-switcher">
+                <a href="{{ url_for('switch_account', role='admin') }}" class="btn-role btn-role--admin">Admin</a>
+                <a href="{{ url_for('switch_account', role='manager') }}" class="btn-role btn-role--manager">Manager</a>
+            </div>
+            <a href="{{ url_for('switch_account', role='employee') }}"
+                class="btn-role btn-role--employee btn-role--block">Employee</a>
+        </div>
+
+        {# AI Insights — uses real data passed from route, not hardcoded strings #}
+        <div class="card side-panel">
+            <div class="side-panel__header">
+                <div class="side-panel__label">AI Insights</div>
+                <button onclick="location.reload()" class="btn-icon" title="Refresh insights"
+                    aria-label="Refresh insights">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        aria-hidden="true">
+                        <path d="M23 4v6h-6" />
+                        <path d="M1 20v-6h6" />
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                </button>
+            </div>
+
+            {% if ai_insights %}
+            <div class="insight-list">
+                {% for insight in ai_insights[:3] %}
+                <div class="insight" data-severity="{{ insight.severity }}">
+                    <p class="insight-text">{{ insight.text }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="insights-empty">
+                <div class="insights-empty__icon-wrap">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"
+                        class="insights-empty__icon" aria-hidden="true">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                    <div class="insights-empty__ring" aria-hidden="true"></div>
+                </div>
+                <h4 class="insights-empty__title">Neural Sync in Progress</h4>
+                <p class="insights-empty__sub">Submit delays to generate insights.</p>
+                <div class="loading-dots" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

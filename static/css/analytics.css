@@ -1,0 +1,77 @@
+/* ---- Layout ---- */
+.page-title       { margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem; }
+.kpi-grid         { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+.chart-grid       { display: grid; gap: 1.5rem; margin-bottom: 2rem; }
+.chart-grid--2col { grid-template-columns: 1fr 1fr; }
+
+/* ---- Chart containers ---- */
+.chart-container       { height: 250px; }
+.chart-container--tall { height: 400px; }
+.chart-label { margin: 0 0 1rem; font-size: 0.9rem; color: var(--text-muted);
+               text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+
+/* ---- Section headers ---- */
+.section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.section-header h2 { margin: 0; font-size: 1.5rem; }
+.section-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+}
+.section-icon--indigo { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+.section-icon--purple { background: linear-gradient(135deg, #667eea, #764ba2); }
+.section-icon--pink   { background: linear-gradient(135deg, #a855f7, #ec4899); }
+.section-icon--violet { background: linear-gradient(135deg, #667eea, #764ba2); }
+
+/* ---- KPI cards ---- */
+.kpi-card          { padding: 1.25rem; border-radius: 1rem; border: 1px solid var(--border); }
+.kpi-card--indigo  { background: rgba(99,102,241,0.1); border-color: #6366f1; color: #818cf8; }
+.kpi-card--green   { background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #34d399; }
+.kpi-card--amber   { background: rgba(245,158,11,0.1); border-color: #f59e0b; color: #fcd34d; }
+.kpi-card--red     { background: rgba(239,68,68,0.1);  border-color: #ef4444; color: #fca5a5; }
+
+/* ---- Executive summary ---- */
+.card--summary { background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+                 border-color: rgba(99,102,241,0.3); box-shadow: 0 4px 16px rgba(99,102,241,0.2);
+                 margin-bottom: 2rem; padding: 1.5rem; border-radius: 1.25rem; border: 1px solid var(--border); }
+.summary-text  { margin: 0; font-size: 1rem; line-height: 1.7; }
+
+/* ---- AI insights ---- */
+.insight-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.insight      { padding: 0.875rem 1rem; border-radius: 0.5rem; border-left: 4px solid transparent; }
+.insight-text { margin: 0; font-size: 0.95rem; line-height: 1.5; }
+
+.insight[data-severity="critical"] { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+.insight[data-severity="warning"]  { border-color: #f59e0b; background: rgba(245,158,11,0.1); }
+.insight[data-severity="stable"]   { border-color: #10b981; background: rgba(16,185,129,0.1); }
+
+/* ---- Velocity monitor ---- */
+.card--spaced-top  { margin-top: 2rem; }
+.card-title        { margin-top: 0; display: flex; align-items: center; gap: 0.5rem; }
+.card-subtitle     { color: var(--text-muted); margin-bottom: 1.5rem; }
+.velocity-list     { display: grid; gap: 1rem; }
+.velocity-row      { background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+                     border-radius: 0.75rem; padding: 1.25rem;
+                     display: flex; justify-content: space-between; align-items: center; }
+.velocity-name     { margin: 0; font-size: 1.1rem; }
+.velocity-meta     { margin: 0.25rem 0 0; color: var(--text-muted); font-size: 0.85rem; }
+.velocity-wrs      { margin-top: 5px; font-size: 0.8rem; color: #818cf8; font-weight: 600; }
+.velocity-badge-col { text-align: right; }
+
+.delay-badge       { padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; }
+.delay-badge--high { background: rgba(239,68,68,0.1); color: #fca5a5; }
+.delay-badge--med  { background: rgba(245,158,11,0.1); color: #fcd34d; }
+.delay-badge--low  { background: rgba(16,185,129,0.1); color: #34d399; }
+
+.alert-label          { margin-top: 5px; font-size: 0.75rem; font-weight: 600; }
+.alert-label--urgent  { color: #ef4444; }
+.alert-label--monitor { color: #f59e0b; }
+
+/* ---- Empty state ---- */
+.empty-state              { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
+.empty-state__ghost-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+                              max-width: 600px; margin: 0 auto 2rem;
+                              opacity: 0.3; filter: grayscale(100%); pointer-events: none; }
+.ghost-chart              { height: 150px; background: var(--bg-card);
+                             border: 1px dashed var(--border); border-radius: 1rem; }
+.empty-state__icon        { margin-bottom: 1rem; opacity: 0.5; }

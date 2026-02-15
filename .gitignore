@@ -22,7 +22,12 @@ wheels/
 .installed.cfg
 *.egg
 
-# Streamlit
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Streamlit (Legacy but good to keep)
 .streamlit/secrets.toml
 
 # Environment Variables (CRITICAL)
@@ -40,3 +45,16 @@ temp_audio.wav
 # OS
 .DS_Store
 Thumbs.db
+
+# Database
+*.db
+*.sqlite
+
+# Local Dev
+maintenance/
+demo_data/
+ai_engine_old/
+
+# Logs
+*.log
+*.txt.bak

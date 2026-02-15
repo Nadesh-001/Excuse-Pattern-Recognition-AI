@@ -22,9 +22,10 @@
 - 🎯 Identify genuine vs suspicious delay patterns
 
 ### Key Technologies
+- *Web Framework*: Flask (Python web framework)
 - *AI Analysis*: Groq AI for intelligent delay pattern recognition
 - *Data Storage*: TiDB (MySQL) Database
-- *Real-time Updates*: Automatic synchronization
+- *Authentication*: Session-based with RBAC decorators
 - *Multi-role Access*: Employee, Manager, and Admin roles
 
 ---
@@ -34,7 +35,7 @@
 ### First Time Login
 
 1. *Access the Application*
-   - Open your browser and navigate to: http://localhost:8501
+   - Open your browser and navigate to: http://localhost:5000
    - You'll see the login page
 
 2. *Default Admin Credentials*
@@ -42,10 +43,10 @@
    - Password: admin123
    - ⚠️ *Important*: Change the password after first login
 
-3. *Dark Mode Toggle*
-   - Located in the sidebar
-   - Click "🌙 Dark Mode" to switch themes
-   - Preference is saved for your session
+3. *Navigation*
+   - Use the navigation bar to access different sections
+   - Dashboard, Tasks, Analytics, Chatbot, and more
+   - Admin panel for administrators
 
 ---
 
@@ -103,11 +104,11 @@ When a task is delayed:
 6. Provides recommendations
 
 *AI Analysis Includes:*
-- *Authenticity Score*: How genuine the reason appears
-- *Category*: Personal, Technical, Health, etc.
-- *Risk Level*: Low/Medium/High
-- *Patterns*: Repeated excuse detection
-- *Avoidance Score*: Likelihood of excuse-making
+- *Authenticity Score*: Composite score (0-100%) based on text quality, history, context, proof, and timing.
+- *Risk Level*: Low (>=75%), Medium (>=45%), or High (<45%).
+- *Signal Breakdown*: Individual scores for excuse quality, delay history, task priority, and submission timing.
+- *AI Neural Sync*: Optional AI-powered verification signal merged into the final score.
+- *Pattern Recognition*: Detection of repeated excuses and avoidance behaviors.
 
 #### 3. *Chat with AI*
 Real-time AI assistant to:
@@ -237,31 +238,17 @@ Audit trail showing:
 
 ### AI Delay Analysis
 
-When an employee submits a delay, the AI analyzes:
+#### Scoring Signals (Weights)
+- **Excuse Text Quality (30%)**: Analyzes length, detail, and usage of generic phrases.
+- **Delay History (20%)**: Higher penalties for frequent prior delays.
+- **Task Context (20%)**: Higher urgency for high-priority tasks near deadlines.
+- **Proof Attachment (15%)**: Bonus score for providing supporting evidence.
+- **Timing (15%)**: Penalty for submissions made after the official deadline.
 
-#### Authenticity Score (0-100%)
-- *80-100%*: Highly authentic, genuine reason
-- *50-79%*: Moderately authentic, needs verification
-- *0-49%*: Low authenticity, potential excuse
-
-#### Categories
-- 🏥 *Health*: Medical issues, illness
-- 👨👩👧 *Personal*: Family matters, personal commitments
-- 🔧 *Technical*: System issues, tool problems
-- 🚦 *External*: Traffic, weather, infrastructure
-- 📚 *Workload*: Too many tasks, complexity
-- 💬 *Communication*: Unclear requirements, miscommunication
-- 🎯 *Other*: Uncategorized reasons
-
-#### Risk Levels
-- 🟢 *Low*: Genuine, acceptable delay
-- 🟡 *Medium*: Requires attention
-- 🔴 *High*: Suspicious pattern, needs investigation
-
-#### Avoidance Score
-Measures responsibility avoidance tendency:
-- High score = Likely making excuses
-- Low score = Taking responsibility
+#### Risk Classifications
+- 🟢 *Low (75-100%)*: Genuine, acceptable delay.
+- 🟡 *Medium (45-74%)*: Requires managerial attention.
+- 🔴 *High (0-44%)*: Suspicious pattern, needs investigation.
 
 ---
 
@@ -545,19 +532,25 @@ This document provides technical and functional details of all features in the E
 ## System Architecture
 
 ### Technology Stack
-- *Frontend*: Streamlit (Python web framework)
+- *Web Framework*: Flask (Python micro-framework)
 - *Backend*: Python 3.8+
 - *Database*: MySQL / TiDB Cloud
-- *AI Engine*: Groq API (openai/gpt-oss-20b model)
-- *Authentication*: Custom session-based authentication
+- *AI Engine*: Groq API (llama-70b model)
+- *Authentication*: Flask session-based with decorator guards
+- *Templates*: Jinja2 (Flask's templating engine)
+- *Charts*: Plotly for interactive visualizations
 
 ### Data Flow
 
-User Input → Streamlit UI → Python Backend → MySQL Database
-                ↓
-          AI Analysis (Groq)
-                ↓
-          Results Display
+```
+User Request → Flask Routes → Python Services → MySQL Database
+                 ↓
+           AI Analysis (Groq)
+                 ↓
+        Flask Templates (Jinja2)
+                 ↓
+           HTML Response
+```
 
 
 ### Database Structure (Tables)
@@ -597,45 +590,313 @@ User Input → Streamlit UI → Python Backend → MySQL Database
 
 ## Role-Based Access Control (RBAC)
 
-### Three-Tier Role System
+### Overview
 
-#### 1. Employee Role
-*Permissions*:
-- ✅ View own tasks
-- ✅ Submit delay reports
-- ✅ Chat with AI
-- ✅ View personal analytics
-- ✅ Export own data
-- ❌ Create tasks
-- ❌ View other users' data
-- ❌ Manage users
+The system implements a **three-tier role-based access control system** with Flask decorator-based authorization:
+- **Employee** - Basic user with task viewing and delay submission
+- **Manager** - Team lead with task creation and team monitoring
+- **Admin** - Full system administrator with user management
 
-#### 2. Manager Role
-*Permissions*:
-- ✅ All Employee permissions
-- ✅ Create and assign tasks
-- ✅ View team analytics
-- ✅ Monitor all employees
-- ✅ View employee profiles
-- ✅ Track task timers
-- ✅ Export team reports
-- ❌ Create/manage users
-- ❌ View system-wide data (other teams)
+### RBAC Implementation Architecture
 
-#### 3. Admin Role
-*Permissions*:
-- ✅ All Manager permissions
-- ✅ Create/edit/delete users
-- ✅ View system-wide analytics
-- ✅ Access all tasks and delays
-- ✅ View activity logs
-- ✅ Full data export
-- ✅ System configuration
+#### 1. Session-Based Authentication
+- User credentials validated during login via bcrypt password verification.
+- User role stored in Flask `session['user_role']`.
+- Session persists until explicit logout or browser close.
+- Role membership is defined centrally in `utils/flask_auth.py` via `_MANAGER_ROLES` and `_ADMIN_ROLES` sets.
 
-### Implementation
-- Role checked on page render: if user['role'] != config.ROLE_XXX
-- Sidebar navigation filtered by role
-- API calls validate user role before execution
+**Session Data:**
+- `session['user_id']` - Persistent User ID
+- `session['user_role']` - Role (employee/manager/admin)
+- `session['user_name']` - Full name
+- `session['email']` - User email
+
+#### 2. Decorator-Based Authorization
+
+The system uses two primary decorators from `utils/flask_auth.py`:
+
+**@auth_required**
+Checks if `user_id` exists in the session. Redirects to login with a `next` URL parameter to preserve the user's destination.
+
+**@manager_required**
+Allows users in `_MANAGER_ROLES` (Managers and Admins). Others are redirected to the dashboard with an error.
+
+**@admin_required**
+Allows users in `_ADMIN_ROLES` (Admins only). Others are redirected to the dashboard with an error.
+
+#### 3. Manual Role Validation
+
+For complex permissions, role is checked within route logic:
+
+```python
+@app.route('/tasks/new', methods=['GET', 'POST'])
+@auth_required
+def new_task():
+    if session.get('user_role') not in ['manager', 'admin']:
+        flash("Unauthorized - Manager privileges required", "error")
+        return redirect(url_for('tasks'))
+    # Only managers and admins can create tasks
+```
+
+#### 4. Data Scope Filtering
+
+Routes filter data based on role:
+
+```python
+# Employee sees only own tasks
+if user_role == 'employee':
+    tasks = get_tasks_by_user(user_id)
+else:
+    # Manager/Admin sees all tasks
+    tasks = get_all_tasks()
+```
+
+---
+
+### Complete Permission Matrix
+
+Comprehensive table of all features and role access:
+
+| Feature Category | Feature | Employee | Manager | Admin | Implementation |
+|-----------------|---------|----------|---------|-------|----------------|
+| **Authentication** | | | | | |
+| | Login | ✅ | ✅ | ✅ | Public route |
+| | Register | ✅ | ✅ | ✅ | Public route |
+| | Logout | ✅ | ✅ | ✅ | @auth_required |
+| **Dashboard** | | | | | |
+| | View own dashboard | ✅ | ✅ | ✅ | @auth_required |
+| | View statistics | ✅ | ✅ | ✅ | @auth_required + role filter |
+| **Tasks** | | | | | |
+| | View own tasks | ✅ | ✅ | ✅ | @auth_required + scope filter |
+| | View all tasks | ❌ | ✅ | ✅ | @auth_required + role check |
+| | Create task | ❌ | ✅ | ✅ | @auth_required + role check |
+| | Assign task to employee | ❌ | ✅ | ✅ | @auth_required + role check |
+| | View task details | ✅ | ✅ | ✅ | @auth_required + ownership check |
+| | Complete task | ✅ | ✅ | ✅ | @auth_required + ownership check |
+| | Submit delay reason | ✅ | ✅ | ✅ | @auth_required |
+| | Attach resources | ❌ | ✅ | ✅ | @auth_required + role check |
+| **Analytics** | | | | | |
+| | View personal analytics | ✅ | ✅ | ✅ | @auth_required |
+| | View team analytics | ❌ | ✅ | ✅ | @auth_required + role filter |
+| | View system analytics | ❌ | ❌ | ✅ | @auth_required + role filter |
+| | View risk insights | ❌ | ✅ | ✅ | @auth_required + role filter |
+| | Export reports | ❌ | ✅ | ✅ | @auth_required + role check |
+| **AI Features** | | | | | |
+| | Use chatbot | ✅ | ✅ | ✅ | @auth_required |
+| | AI delay analysis | ✅ | ✅ | ✅ | @auth_required (automatic) |
+| | View AI feedback | ✅ | ✅ | ✅ | @auth_required |
+| **User Management** | | | | | |
+| | View own profile | ✅ | ✅ | ✅ | @auth_required |
+| | Edit own profile | ✅ | ✅ | ✅ | @auth_required |
+| | View all users | ❌ | ❌ | ✅ | @admin_required |
+| | Create new user | ❌ | ❌ | ✅ | @admin_required |
+| | Edit any user | ❌ | ❌ | ✅ | @admin_required |
+| | Delete user | ❌ | ❌ | ✅ | @admin_required |
+| | Activate/Deactivate user | ❌ | ❌ | ✅ | @admin_required |
+| **System** | | | | | |
+| | View audit logs | ❌ | ❌ | ✅ | @admin_required |
+| | Run system diagnostics | ❌ | ❌ | ✅ | @admin_required |
+| | View activity logs | ❌ | ❌ | ✅ | @admin_required (last 50) |
+| **Search** | | | | | |
+| | Search own tasks/delays | ✅ | ✅ | ✅ | @auth_required + scope filter |
+| | Search all data | ❌ | ❌ | ✅ | @auth_required + scope filter |
+
+---
+
+### Flask Route Access Control
+
+Complete list of all routes and their authorization:
+
+| Route | Method | Access Level | Decorator(s) | Role Check | Description |
+|-------|--------|-------------|--------------|------------|-------------|
+| `/` | GET | Public | - | - | Redirects to login or dashboard |
+| `/login` | GET, POST | Public | - | - | User authentication |
+| `/register` | GET, POST | Public | - | - | New user registration |
+| `/logout` | GET | Authenticated | - | - | Session termination |
+| `/dashboard` | GET | Authenticated | @auth_required | - | User dashboard with statistics |
+| `/tasks` | GET | Authenticated | @auth_required | Scope filtering | View tasks list |
+| `/tasks/new` | GET, POST | Manager+ | @auth_required | Manual check | Create new task |
+| `/tasks/<id>` | GET | Authenticated | @auth_required | Ownership | Task details view |
+| `/tasks/<id>/complete` | POST | Authenticated | @auth_required | Ownership | Mark task complete |
+| `/tasks/<id>/delay` | POST | Authenticated | @auth_required | Ownership | Submit delay reason |
+| `/analytics` | GET | Authenticated | @auth_required | Role filtering | Analytics dashboard |
+| `/chatbot` | GET | Authenticated | @auth_required | - | AI chatbot interface |
+| `/chatbot/api` | POST | Authenticated | Session check | - | AI chat API endpoint |
+| `/admin` | GET | Admin only | @admin_required | - | Admin control panel |
+| `/admin/users/add` | POST | Admin only | @admin_required | - | Create new user |
+| `/admin/users/edit` | POST | Admin only | @admin_required | - | Edit user details |
+| `/admin/users/delete/<id>` | POST | Admin only | @admin_required | - | Delete user account |
+| `/search` | GET | Authenticated | @auth_required | Scope filtering | Search functionality |
+
+---
+
+### Security Implementation
+
+#### 1. Password Security
+```python
+# Password Hashing (bcrypt)
+from utils.hashing import hash_password, verify_password
+
+# During registration
+hashed = hash_password(plain_password)
+# Store hashed in database
+
+# During login
+if verify_password(plain_password, stored_hash):
+    # Authentication successful
+```
+
+**Features:**
+- Bcrypt algorithm with salt
+- Adaptive hashing (cost factor)
+- Never store plain text passwords
+- One-way hash (cannot be reversed)
+
+#### 2. Session Security
+```python
+# Flask session configuration
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SECURE'] = True  # HTTPS only
+```
+
+**Features:**
+- Cryptographically signed cookies
+- HTTP-only cookies (no JavaScript access)
+- Secure flag for HTTPS
+- Server-side session storage
+
+#### 3. Authorization Checks
+
+**Three-Layer Protection:**
+
+1. **Route Level** - Decorators prevent unauthorized access
+2. **Logic Level** - Manual role checks in complex scenarios
+3. **Data Level** - Database queries filtered by user/role
+
+#### 4. Input Validation
+- Email format validation (regex)
+- Role validation (enum check)
+- SQL injection prevention (parameterized queries)
+- XSS protection (Jinja2 auto-escaping)
+
+#### 5. Audit Trail
+```python
+# Logging security events
+from services.activity_service import log_activity
+
+log_activity(user_id, "LOGIN", "User logged in successfully")
+log_activity(admin_id, "CREATE_USER", f"Created user {new_email}")
+log_activity(admin_id, "DELETE_USER", f"Deleted user {target_email}")
+```
+
+All security-relevant actions are logged to `audit_logs` table.
+
+---
+
+### Permission Enforcement Examples
+
+#### Example 1: Employee Viewing Tasks
+```python
+@app.route('/tasks')
+@auth_required
+def tasks():
+    user_id = session['user_id']
+    role = session.get('user_role', 'employee')
+    
+    # Employee sees only assigned tasks
+    if role == 'employee':
+        tasks_list = get_tasks_by_user(user_id)
+    else:
+        # Manager/Admin sees all tasks
+        tasks_list = get_all_tasks()
+    
+    return render_template('tasks.html', tasks=tasks_list, role=role)
+```
+
+#### Example 2: Manager Creating Task
+```python
+@app.route('/tasks/new', methods=['GET', 'POST'])
+@auth_required
+def new_task():
+    # Manual role check
+    if session.get('user_role') not in ['manager', 'admin']:
+        flash("Unauthorized - Manager privileges required", "error")
+        return redirect(url_for('tasks'))
+    
+    if request.method == 'POST':
+        # Only employees can be assigned tasks
+        users = get_users_by_role('employee')
+        # Create task logic...
+    
+    return render_template('task_form.html', users=users)
+```
+
+#### Example 3: Admin Deleting User
+```python
+@app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
+@admin_required
+def admin_delete_user(user_id):
+    # Prevent self-deletion
+    if user_id == session['user_id']:
+        flash("Cannot delete yourself", "error")
+        return redirect(url_for('admin_panel'))
+    
+    # Admin-only operation (already checked by decorator)
+    # Delete user and cascade related data
+    # Log the action
+    log_activity(session['user_id'], "DELETE_USER", f"Deleted user ID {user_id}")
+    
+    return redirect(url_for('admin_panel'))
+```
+
+---
+
+### Best Practices
+
+#### For Developers
+1. ✅ **Always use decorators** - Never rely solely on client-side checks
+2. ✅ **Validate ownership** - Check if user owns the resource
+3. ✅ **Filter by role** - Apply scope filtering in queries
+4. ✅ **Log security events** - Audit trail for accountability
+5. ✅ **Never trust input** - Validate and sanitize all user input
+6. ✅ **Use parameterized queries** - Prevent SQL injection
+7. ✅ **Check both authentication and authorization** - Auth != Authz
+
+#### For Administrators
+1. ✅ **Review audit logs regularly** - Monitor for suspicious activity
+2. ✅ **Use strong passwords** - Enforce password policies
+3. ✅ **Deactivate unused accounts** - Reduce attack surface
+4. ✅ **Limit admin accounts** - Principle of least privilege
+5. ✅ **Monitor failed logins** - Detect brute force attempts
+6. ✅ **Regular security audits** - Review user access patterns
+
+#### For End Users
+1. ✅ **Never share credentials** - Each user should have unique account
+2. ✅ **Log out on shared devices** - Prevent session hijacking
+3. ✅ **Report suspicious activity** - Inform admin immediately
+4. ✅ **Use unique passwords** - Don't reuse across systems
+5. ✅ **Verify URLs** - Ensure you're on the correct domain
+
+---
+
+### Troubleshooting RBAC Issues
+
+**Problem:** "Please login to access this page"
+- **Cause:** Session expired or not authenticated
+- **Solution:** Log in again
+
+**Problem:** "Admin privileges required"
+- **Cause:** Trying to access admin route with non-admin account
+- **Solution:** Contact admin for role upgrade (if justified)
+
+**Problem:** "Cannot see other users' tasks"
+- **Cause:** Employee role has limited scope
+- **Solution:** This is intentional - only managers/admins see all tasks
+
+**Problem:** "Task creation option not available"
+- **Cause:** Employee role cannot create tasks
+- **Solution:** Only managers and admins can create tasks
 
 ---
 

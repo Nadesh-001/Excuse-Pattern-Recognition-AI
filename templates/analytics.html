@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Excuse Pattern AI{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
+{% endblock %}
+
+{% block content %}
+{% include 'partials/_dashboard_tabs.html' %}
+
+{# ------------------------------------------------------------------ #}
+{# Determine view mode once so the rest of the template doesn't repeat #}
+{# ------------------------------------------------------------------ #}
+{% set is_management = role in ['manager', 'admin'] %}
+{% set has_data = stats.get('total_delays', 0) > 0 or stats.get('risk_distribution', {}).values() | sum > 0 %}
+
+<h1 class="page-title">
+    📊 {{ 'Team Analytics' if is_management else 'My Personal Analytics' }}
+</h1>
+
+{# ---- KPI strip ---- #}
+<div class="kpi-grid">
+    <div class="kpi-card kpi-card--indigo">
+        <div class="kpi-value">{{ stats.wrs_score }}</div>
+        <div class="kpi-label">{{ 'Team' if is_management else 'My' }} Reliability (WRS)</div>
+    </div>
+    <div class="kpi-card kpi-card--green">
+        <div class="kpi-value">{{ stats.risk_low }}</div>
+        <div class="kpi-label">Low Risk Delays</div>
+    </div>
+    <div class="kpi-card kpi-card--amber">
+        <div class="kpi-value">{{ stats.risk_med }}</div>
+        <div class="kpi-label">Medium Risk</div>
+    </div>
+    <div class="kpi-card kpi-card--red">
+        <div class="kpi-value">{{ stats.risk_high }}</div>
+        <div class="kpi-label">High Risk</div>
+    </div>
+</div>
+
+{% if has_data %}
+
+{# ---- Gauge pair ---- #}
+<div class="section-header">
+    <div class="section-icon section-icon--purple">📊</div>
+    <h2>{{ 'Team Signal' if is_management else 'Your Performance Analytics' }}</h2>
+</div>
+
+<div class="chart-grid chart-grid--2col">
+    <div class="card">
+        <h3 class="chart-label">
+            {{ 'Authenticity Signal' if is_management else 'Average Authenticity' }}
+        </h3>
+        <div id="chart-auth" class="chart-container"></div>
+    </div>
+    <div class="card">
+        <h3 class="chart-label">
+            {{ 'Avoidance Index' if is_management else 'Average Avoidance' }}
+        </h3>
+        <div id="chart-avoid" class="chart-container"></div>
+    </div>
+</div>
+
+{# ---- Gauge pair: WRS + Risk distribution ---- #}
+<div class="chart-grid chart-grid--2col">
+    <div class="card">
+        <h3 class="chart-label">Reliability (WRS)</h3>
+        <div id="chart-wrs" class="chart-container"></div>
+    </div>
+    <div class="card">
+        <h3 class="chart-label">Risk Distribution</h3>
+        <div id="chart-status" class="chart-container"></div>
+    </div>
+</div>
+
+{# ---- Executive summary ---- #}
+{% if executive_summary %}
+<div class="section-header">
+    <div class="section-icon section-icon--indigo">📝</div>
+    <h2>Executive AI Summary</h2>
+</div>
+<div class="card card--summary">
+    <p class="summary-text">{{ executive_summary }}</p>
+</div>
+{% endif %}
+
+{# ---- AI insights ---- #}
+{% if ai_insights %}
+<div class="section-header">
+    <div class="section-icon section-icon--pink">🧠</div>
+    <h2>AI Intelligence Insights</h2>
+</div>
+<div class="card">
+    <div class="insight-list">
+        {% for insight in ai_insights %}
+        <div class="insight" data-severity="{{ insight.severity }}">
+            <p class="insight-text">{{ insight.text }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{# ---- Trend over time ---- #}
+{% if graphs.get('trend_over_time') %}
+<div class="section-header">
+    <div class="section-icon section-icon--violet">📈</div>
+    <h2>Trend Over Time</h2>
+</div>
+<div class="card">
+    <div id="chart-trend" class="chart-container chart-container--tall"></div>
+</div>
+{% endif %}
+
+{# ---- Day-of-week line ---- #}
+{% if graphs.get('line_chart') %}
+<div class="card">
+    <h3 class="chart-label">Strategic Trend (Day of Week)</h3>
+    <div id="chart-line" class="chart-container chart-container--tall"></div>
+</div>
+{% endif %}
+
+{# ---- Reason categories ---- #}
+{% if graphs.get('categories') %}
+<div class="card">
+    <h3 class="chart-label" style="text-align: center;">Reason Categories</h3>
+    <div id="chart-cat" class="chart-container chart-container--tall"></div>
+</div>
+{% endif %}
+
+{# ---- Teammate velocity (management only) ---- #}
+{% if is_management and stats.get('delay_rate_by_user') %}
+<div class="card card--spaced-top">
+    <h2 class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"
+            aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="6" />
+            <circle cx="12" cy="12" r="2" />
+        </svg>
+        Teammate Velocity Monitor
+    </h2>
+    <p class="card-subtitle">Monitoring teammate task completion and delay ratios.</p>
+
+    <div class="velocity-list">
+        {% for emp in stats.delay_rate_by_user %}
+        <div class="velocity-row">
+            <div class="velocity-info">
+                <h3 class="velocity-name">{{ emp.user }}</h3>
+                <p class="velocity-meta">
+                    {{ emp.delay_count }} total setbacks &nbsp;|&nbsp; {{ emp.task_count }} total tasks
+                </p>
+                <p class="velocity-wrs">WRS Rating: {{ emp.wrs }}</p>
+            </div>
+            <div class="velocity-badge-col">
+                <span
+                    class="delay-badge {% if emp.delay_rate > 50 %}delay-badge--high{% elif emp.delay_rate > 20 %}delay-badge--med{% else %}delay-badge--low{% endif %}">
+                    {{ emp.delay_rate }}% delay ratio
+                </span>
+                {% if emp.wrs < 60 %} <p class="alert-label alert-label--urgent">⚠️ Urgent Intervention</p>
+                    {% elif emp.delay_rate > 30 %}
+                    <p class="alert-label alert-label--monitor">⚡ Monitor Closely</p>
+                    {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+{# ---- Empty state ---- #}
+<div class="empty-state">
+    <div class="empty-state__ghost-charts" aria-hidden="true">
+        <div class="ghost-chart"></div>
+        <div class="ghost-chart"></div>
+    </div>
+    <svg class="empty-state__icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.5" aria-hidden="true">
+        <path d="M3 3v18h18" />
+        <path d="M18 17V9" />
+        <path d="M13 17v-6" />
+        <path d="M8 17v-4" />
+    </svg>
+    <h2>No Analytics Data Yet</h2>
+    <p>Submit delays on your tasks to generate insights.</p>
+</div>
+{% endif %}
+
+{# ---- Plotly ---- #}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    function plot(id, data) {
+        if (!data || !document.getElementById(id)) return;
+        try {
+            Plotly.newPlot(id, data.data, data.layout, { responsive: true });
+        } catch (e) {
+            console.error("Plot error for #" + id, e);
+        }
+    }
+
+    plot('chart-auth', {{ graphs.get('gauge_auth', {}) | tojson | safe }});
+    plot('chart-avoid', {{ graphs.get('gauge_avoidance', {}) | tojson | safe }});
+    plot('chart-wrs', {{ graphs.get('gauge_wrs', {}) | tojson | safe }});
+    plot('chart-status', {{ graphs.get('status_pie', {}) | tojson | safe }});
+    plot('chart-trend', {{ graphs.get('trend_over_time', {}) | tojson | safe }});
+    plot('chart-line', {{ graphs.get('line_chart', {}) | tojson | safe }});
+    plot('chart-cat', {{ graphs.get('categories', {}) | tojson | safe }});
+</script>
+
+{% endblock %}

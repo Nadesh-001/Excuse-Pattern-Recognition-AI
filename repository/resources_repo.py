@@ -1,5 +1,4 @@
 from .db import get_conn
-import mysql.connector
 import json
 
 def create_resource(task_id, resource_type, url_or_path, title, ai_summary, requirements_json, deadlines_json, completeness_score):
@@ -24,9 +23,20 @@ def create_resource(task_id, resource_type, url_or_path, title, ai_summary, requ
 
 def get_resources_by_task(task_id):
     conn = get_conn()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()  # PostgreSQL RealDictCursor already set
     try:
         cursor.execute("SELECT * FROM attachments WHERE task_id = %s", (task_id,))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_all_resources():
+    """Get all resources/attachments."""
+    conn = get_conn()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM attachments ORDER BY uploaded_at DESC")
         return cursor.fetchall()
     finally:
         cursor.close()

@@ -1,4 +1,3 @@
-import streamlit as st
 import os
 from repository.db import get_conn
 import sys
@@ -18,12 +17,12 @@ def check_api_keys():
     status = {}
     
     # Check Groq
-    groq_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
+    groq_key = os.getenv("GROQ_API_KEY")
     status["Groq API"] = (True, "Key Found") if groq_key else (False, "Key Missing")
     
     # Check Gemini
-    gemini_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
-    status["Gemini API"] = (True, "Key Found") if gemini_key else (False, "Key Missing")
+    gemini_key = os.getenv("GEMINI_API_KEY") # Or GROQ_API_KEY_SECONDARY
+    status["Gemini/Secondary API"] = (True, "Key Found") if gemini_key or os.getenv("GROQ_API_KEY_SECONDARY") else (False, "Key Missing")
     
     return status
 
@@ -54,7 +53,6 @@ def check_filesystem():
 def get_system_info():
     return {
         "Python Version": sys.version.split()[0],
-        "Streamlit Version": st.__version__,
         "OS": sys.platform
     }
 

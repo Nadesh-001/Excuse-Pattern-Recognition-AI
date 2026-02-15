@@ -1,69 +1,47 @@
 from datetime import datetime
 
-def calculate_time_status(status, created_at, estimated_minutes):
+def calculate_elapsed_time(created_at):
     """
-    Returns (status_text, color_code)
+    Calculates the elapsed time from created_at to now.
+    Returns a string like '5d 21h 35m'.
     """
-    if not estimated_minutes:
-        return None, None
+    if not created_at:
+        return "N/A"
         
     if isinstance(created_at, str):
         try:
-             created_at = datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S")
-        except:
-             return None, None
-             
-    elapsed_minutes = int((datetime.now() - created_at).total_seconds() / 60)
-    
-    if status == 'Completed':
-        if elapsed_minutes <= estimated_minutes:
-            return f"✅ Done in {elapsed_minutes}m (On Time)", "#10b981"
-        else:
-            return f"⚠️ Done +{elapsed_minutes - estimated_minutes}m late", "#f59e0b"
+            created_at = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return "N/A"
             
-    # Pending or Delayed
-    if elapsed_minutes > estimated_minutes:
-        return f"🔴 Over by {elapsed_minutes - estimated_minutes}m", "#ef4444"
-    else:
-        return f"⏳ {estimated_minutes - elapsed_minutes}m remaining", "#3b82f6"
-
-def get_elapsed_str(created_at):
-    if isinstance(created_at, str):
-        try:
-             created_at = datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S")
-        except:
-             return "N/A"
-             
-    delta = datetime.now() - created_at
+    now = datetime.now()
+    # Handle timezone-aware datetimes from PostgreSQL
+    if created_at.tzinfo is not None:
+        created_at = created_at.replace(tzinfo=None)
+        
+    delta = now - created_at
+    
     days = delta.days
-    seconds = delta.seconds
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
+    hours, remainder = divmod(delta.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
     
     parts = []
     if days > 0:
         parts.append(f"{days}d")
     if hours > 0:
         parts.append(f"{hours}h")
-    parts.append(f"{minutes}m")
-    
-    return " ".join(parts)
+    if minutes > 0:
+        parts.append(f"{minutes}m")
+        
+    return " ".join(parts) if parts else "0m"
 
 def parse_time_input(hours, minutes):
     """
-    Convert hours and minutes into total minutes.
-    Returns total minutes as integer.
+    Converts hours and minutes strings/ints to total minutes integer.
     """
-    total_minutes = 0
-    if hours:
-        try:
-            total_minutes += int(hours) * 60
-        except (ValueError, TypeError):
-            pass
-    if minutes:
-        try:
-            total_minutes += int(minutes)
-        except (ValueError, TypeError):
-            pass
-    return total_minutes
-
+    try:
+        h = int(hours or 0)
+        m = int(minutes or 0)
+        return (h * 60) + m
+    except (ValueError, TypeError):
+        return 0

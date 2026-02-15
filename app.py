@@ -1,225 +1,64 @@
-import streamlit as st
-import base64
+from flask import Flask, render_template, redirect, url_for, session
+from dotenv import load_dotenv
 import os
-from services.auth_service import authenticate_user, register_user
-from utils.session import login_session
-from components.styling import apply_custom_css
+from datetime import timedelta
+from flask_wtf.csrf import CSRFProtect
 
-# Page Config
-st.set_page_config(
-    page_title="Excuse Pattern AI - Login",
-    page_icon="🤖",
-    layout="wide",
-    initial_sidebar_state="expanded"
+# Load environment variables
+load_dotenv()
+
+# Create Flask app
+app = Flask(__name__)
+
+# --- Configuration ---
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev_key_4192_secure_for_demo_only")
+if os.getenv("FLASK_ENV") == "production" and app.secret_key == "dev_key_4192_secure_for_demo_only":
+    raise RuntimeError("Production environment detected but FLASK_SECRET_KEY is not set securely.")
+app.permanent_session_lifetime = timedelta(days=7)
+
+# CSRF Protection
+csrf = CSRFProtect(app)
+
+# Secure Cookie Configuration
+is_production = os.getenv('FLASK_ENV') == 'production'
+
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SECURE=is_production,
+    SESSION_COOKIE_SAMESITE="Lax",
+    MAX_CONTENT_LENGTH=50 * 1024 * 1024
 )
 
-# Initialize session state if not exists
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
+# --- Root Route ---
+@app.route('/')
+def index():
+    return render_template('landing.html')
 
-# Redirect if already logged in
-if st.session_state.logged_in:
-    st.switch_page("pages/1_Dashboard.py")
+# --- Error Handlers ---
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
-# Apply CSS
-apply_custom_css()
+@app.errorhandler(500)
+def internal_server_error(e):
+    app.logger.error(f"Server Error: {e}")
+    return render_template('base.html', error="A serious error occurred. Please try again later."), 500
 
-def get_base64(path):
-    """Safely encode image to base64 with file existence check"""
-    if not os.path.exists(path):
-        return ""
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
+# Import all route modules (this registers the routes)
+import routes.auth_routes
+import routes.task_routes
+import routes.admin_routes
+import routes.analytics_routes
+import routes.chatbot_routes
+import routes.common_routes
+import routes.dashboard_routes
+import routes.debug_routes
+import routes.team_routes
+import routes.export_routes
+import routes.sample_data_routes  # Sample data generator for testing AI features
 
-from services.theme_service import get_logo_path
-
-def landing_page():
-    # Dynamic logo based on theme
-    theme = 'light'
-    logo_path = get_logo_path(theme)
-    logo = get_base64(logo_path)
-    
-    # Use emoji fallback if logo doesn't exist
-    if logo:
-        logo_html = f'<img src="data:image/png;base64,{logo}" class="app-logo"/>'
-    else:
-        logo_html = '<div class="app-logo" style="font-size: 80px;">🤖</div>'
-    
-    html_content = f"""
-    <div class="landing-wrapper">
-        <div class="landing-content">
-            {logo_html}
-            <div class="landing-title">
-                EXCUSE PATTERN RECOGNITION AI
-            </div>
-            <div class="app-quote">
-                Turning excuses into insights.<br>
-                AI-driven accountability for time and tasks.
-            </div>
-            <a href="?page=login" class="start-btn">
-                START
-            </a>
-        </div>
-    </div>
-    """
-    
-    st.markdown(html_content, unsafe_allow_html=True)
-
-
-from repository.users_repo import count_admins
-from services.auth_service import register_user
-
-def login_page():
-    # Spacer
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Center container
-    col1, col2, col3 = st.columns([1, 2, 1])
-    
-    with col2:
-        # Header
-        st.markdown("""
-        <div class="login-header">
-            <div class="app-logo">🤖</div>
-            <h1 class="app-title">Excuse Pattern AI</h1>
-            <p class="app-subtitle">Intelligent Delay Analysis & Workforce Analytics</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Login Card
-        st.markdown('<div class="login-card">', unsafe_allow_html=True)
-        
-        # 🟢 CHECK SYSTEM STATUS
-        admin_count = count_admins()
-        
-        if admin_count == 0:
-            # === ONE-TIME ADMIN SETUP ===
-            st.warning("⚠️ System Not Initialized. Please create the Global Admin account.")
-            
-            with st.form("admin_setup_form"):
-                st.markdown("### 🛠️ One-Time Admin Setup")
-                new_name = st.text_input("Full Name")
-                new_email = st.text_input("Email Address")
-                new_pass = st.text_input("Password", type="password")
-                org_name = st.text_input("Organization Name", value="My Organization")
-                
-                # Hidden Role
-                st.info("Role: Global Administrator (Fixed)")
-                
-                if st.form_submit_button("Initialize System"):
-                    if new_name and new_email and new_pass and org_name:
-                        success, msg = register_user(new_name, new_email, new_pass, role='admin', org_name=org_name)
-                        if success:
-                            st.success("✅ System Initialized! Please login.")
-                            st.rerun()
-                        else:
-                            st.error(msg)
-                    else:
-                        st.warning("All fields are required.")
-        
-        else:
-            # === NORMAL OPERATION ===
-            tab1, tab2 = st.tabs(["🔐 Login", "📝 Sign Up"])
-    
-            with tab1:
-                with st.form("login_form"):
-                    st.markdown("#### Welcome Back!")
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    
-                    email = st.text_input("📧 Email Address", placeholder="your.email@company.com")
-                    password = st.text_input("🔒 Password", type="password", placeholder="Enter your password")
-                    
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    submit = st.form_submit_button("🚀 Login", use_container_width=True)
-                    
-                    if submit:
-                        if email and password:
-                            try:
-                                with st.spinner("Verifying credentials..."):
-                                    import time
-                                    start_t = time.time()
-                                    user = authenticate_user(email, password)
-                                    latency = time.time() - start_t
-                                    
-                                if user:
-                                    # Show latency toast (helping user diagnose)
-                                    st.toast(f"⚡ Logged in in {latency:.2f}s", icon="🚀")
-                                    
-                                    login_session(user)
-                                    st.success(f"✅ Welcome back, {user['full_name']}!")
-                                    st.rerun()
-                                else:
-                                    st.error("❌ Invalid email or password")
-                            except ValueError as ve:
-                                 st.error(f"❌ {ve}")
-                            except Exception as e:
-                                 st.error("❌ Login failed. Please try again.")
-                        else:
-                            st.warning("⚠️ Please fill all fields")
-            
-            with tab2:
-                st.markdown("#### Create New Account")
-                with st.form("signup_form"):
-                    s_name = st.text_input("Full Name")
-                    s_email = st.text_input("Email Address")
-                    s_pass = st.text_input("Password", type="password")
-                    s_org = st.text_input("Organization", placeholder="Enter your organization name")
-                    s_role = st.selectbox("Role", ["employee", "manager"])
-                    
-                    if st.form_submit_button("Create Account"):
-                        if s_name and s_email and s_pass and s_org:
-                            # Register as Employee/Manager
-                            success, msg = register_user(s_name, s_email, s_pass, role=s_role, org_name=s_org)
-                            if success:
-                                st.success("✅ Account created! Please login.")
-                            else:
-                                st.error(msg)
-                        else:
-                            st.warning("All fields are required")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Features - Vertical Layout
-        st.markdown("""
-        <div class="feature-vertical">
-            <div class="feature-item">
-                <div class="feature-icon">🤖</div>
-                <div class="feature-text">AI-Powered Analysis</div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">📊</div>
-                <div class="feature-text">Real-Time Analytics</div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">🔒</div>
-                <div class="feature-text">Secure & Private</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Footer
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        st.markdown("""
-        <div style="text-align: center; color: #6b7280; font-size: 0.875rem;">
-            <p>Powered by Advanced AI • Built with ❤️ for Better Workforce Management</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-def main():
-    # Routing Logic - Using newer st.query_params API
-    if hasattr(st, 'query_params') and hasattr(st.query_params, '__contains__'):
-        # Streamlit >= 1.30.0 with new query_params
-        page = st.query_params.get("page", "landing")
-    else:
-        # Fallback for older versions (use dict-like access)
-        page = "landing"
-    
-    if page == "landing":
-        landing_page()
-    elif page == "login":
-        login_page()
-    else:
-        landing_page()
-
-if __name__ == "__main__":
-    main()
+# --- Run Server ---
+if __name__ == '__main__':
+    print("🚀 Starting Flask server...")
+    print("📍 Server will be available at: http://127.0.0.1:5000")
+    app.run(debug=True, host='0.0.0.0', port=5000)

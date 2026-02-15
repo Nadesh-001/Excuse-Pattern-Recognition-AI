@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Excuse Pattern AI{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="margin-bottom: 2rem; font-size: 2rem; font-weight: 700;">Profile Settings</h1>
+
+    <!-- Profile Info Card -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="position: relative;">
+                    <img src="https://ui-avatars.com/api/?name={{ user_name }}&background=random" alt="Profile"
+                        style="width: 64px; height: 64px; border-radius: 50%; 
+                         border: 4px solid {% if role == 'admin' %}#ef4444{% elif role == 'manager' %}#3b82f6{% else %}#10b981{% endif %};
+                         box-shadow: 0 0 12px {% if role == 'admin' %}#ef4444{% elif role == 'manager' %}#3b82f6{% else %}#10b981{% endif %};">
+                </div>
+                <div>
+                    <h2 style="margin: 0 0 0.25rem 0; font-size: 1.5rem; font-weight: 700;">{{ user_name }}</h2>
+                    <p style="color: var(--text-muted); margin: 0;">{{ email }}</p>
+                    {% if job_role %}
+                    <p style="color: var(--manager-blue); margin: 0.25rem 0 0 0; font-size: 0.9rem; font-weight: 500;">
+                        {{ job_role }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            <span
+                style="padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; text-transform: capitalize;
+                background: {% if role == 'admin' %}rgba(239, 68, 68, 0.2){% elif role == 'manager' %}rgba(59, 130, 246, 0.2){% else %}rgba(16, 185, 129, 0.2){% endif %}; 
+                color: {% if role == 'admin' %}#fca5a5{% elif role == 'manager' %}#60a5fa{% else %}#34d399{% endif %};">
+                {{ role }}
+            </span>
+        </div>
+
+        <div style="border-top: 1px solid var(--border); padding-top: 1.5rem;">
+            <div style="display: grid; gap: 1rem;">
+                <div>
+                    <label
+                        style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem;">Full
+                        Name</label>
+                    <div style="font-weight: 500;">{{ user_name }}</div>
+                </div>
+                <div>
+                    <label
+                        style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem;">Email</label>
+                    <div style="font-weight: 500;">{{ email }}</div>
+                </div>
+                <div>
+                    <label
+                        style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem;">Role</label>
+                    <div
+                        style="font-weight: 500; text-transform: capitalize;
+                                color: {% if role == 'admin' %}#fca5a5{% elif role == 'manager' %}#60a5fa{% else %}#34d399{% endif %};">
+                        {{ role }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings Card -->
+    <div class="card"
+        style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%); border: 1px solid rgba(16, 185, 129, 0.3);">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+            <div
+                style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                <span style="font-size: 1.5rem;">🔒</span>
+            </div>
+            <h3
+                style="margin: 0; font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #10b981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                Security</h3>
+        </div>
+
+        <div style="padding: 1.25rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 0.75rem; transition: all 0.2s;"
+            onmouseover="this.style.background='rgba(16, 185, 129, 0.12)'; this.style.borderColor='rgba(16, 185, 129, 0.3)';"
+            onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 1rem;">Change Password</div>
+                    <div style="color: var(--text-muted); font-size: 0.875rem;">Update your password regularly for
+                        better security</div>
+                </div>
+                <a href="{{ url_for('change_password') }}"
+                    style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 0.5rem; color: white; text-decoration: none; font-weight: 600; transition: all 0.2s; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); white-space: nowrap;"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.4)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(16, 185, 129, 0.3)';">
+                    <span>🔑</span> Change Password
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone Card -->
+    <div class="card"
+        style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%); border: 1px solid rgba(239, 68, 68, 0.3);">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+            <div
+                style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                <span style="font-size: 1.5rem;">⚠️</span>
+            </div>
+            <h3
+                style="margin: 0; font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                Danger Zone</h3>
+        </div>
+
+        <div style="padding: 1.25rem; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 0.75rem; transition: all 0.2s;"
+            onmouseover="this.style.background='rgba(239, 68, 68, 0.12)'; this.style.borderColor='rgba(239, 68, 68, 0.3)';"
+            onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.borderColor='rgba(239, 68, 68, 0.2)';">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 1rem;">Delete Account</div>
+                    <div style="color: var(--text-muted); font-size: 0.875rem;">Permanently delete your account and all
+                        data</div>
+                </div>
+                <form action="{{ url_for('delete_account') }}" method="POST"
+                    onsubmit="return confirm('⚠️ Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.');"
+                    style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <button type="submit"
+                        style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; border-radius: 0.5rem; color: white; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3); white-space: nowrap;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.4)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(239, 68, 68, 0.3)';">
+                        <span>🗑️</span> Delete Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

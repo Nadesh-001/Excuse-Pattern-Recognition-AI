@@ -1,15 +1,42 @@
-streamlit
-mysql-connector-python
+# Web Framework
+Flask>=3.0.0
+Flask-WTF>=1.2.0
+email-validator
+
+# Database - Supabase (PostgreSQL)
+supabase>=2.0.0
+psycopg2-binary>=2.9.9
+gotrue>=2.0.0
+postgrest>=0.16.0
+storage3>=0.8.0
+
+# Data Processing
 pandas
-requests
 python-dotenv
+numpy
+
+# Web Scraping / Document Parsing
+requests
 beautifulsoup4
 pypdf
 docx2txt
+PyPDF2
+
+# Visualization
 plotly
+altair
+
+# Authentication & Security
 passlib
 bcrypt
+cryptography
+
+# AI / ML APIs
 openai
 huggingface_hub
 google-generativeai
 groq
+
+# Utilities
+python-dateutil
+typing-extensions

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks - Excuse Pattern AI{% endblock %}
+
+{% block content %}
+<!-- Role-Based Navigation Tabs -->
+{% include 'partials/_dashboard_tabs.html' %}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="margin: 0;">Tasks</h1>
+
+    <div style="display: flex; gap: 1rem;">
+        {% if role in ['manager', 'admin'] %}
+        <a href="{{ url_for('new_task') }}" class="btn-primary"
+            style="text-decoration: none; padding: 0.5rem 1.5rem; font-size: 0.9rem; border-radius: 0.5rem;">
+            ➕ Create Task
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Filtering & Search Row -->
+<div
+    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+
+    <!-- Filter by Status -->
+    <div
+        style="background: var(--bg-card); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <label
+            style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.75rem; font-weight: 700;">
+            Filter by Status
+        </label>
+        <div style="position: relative;">
+            <select onchange="window.location.href='/tasks?status='+this.value"
+                style="width: 100%; appearance: none; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.95rem; cursor: pointer; transition: border-color 0.2s;">
+                <option value="All">All Statuses</option>
+                <option value="Pending" {{ 'selected' if request.args.get('status')=='Pending' }}>Pending</option>
+                <option value="Completed" {{ 'selected' if request.args.get('status')=='Completed' }}>Completed</option>
+                <option value="Delayed" {{ 'selected' if request.args.get('status')=='Delayed' }}>Delayed</option>
+            </select>
+            <div
+                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted);">
+                ▼
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter by Priority -->
+    <div
+        style="background: var(--bg-card); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <label
+            style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.75rem; font-weight: 700;">
+            Filter by Priority
+        </label>
+        <div style="position: relative;">
+            <select
+                style="width: 100%; appearance: none; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.95rem; cursor: pointer; transition: border-color 0.2s;">
+                <option>All Priorities</option>
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+            </select>
+            <div
+                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted);">
+                ▼
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Tasks -->
+    <div
+        style="background: var(--bg-card); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <label
+            style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.75rem; font-weight: 700;">
+            Search Tasks
+        </label>
+        <div style="position: relative;">
+            <input type="text" placeholder="Search by title..."
+                style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: #fff; padding: 0.75rem 1rem 0.75rem 2.5rem; border-radius: 0.5rem; font-size: 0.95rem; transition: border-color 0.2s;">
+            <div
+                style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted);">
+                🔍
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="tasks-grid">
+    {% if tasks %}
+    <h3 style="margin-bottom: 1.5rem;">Showing {{ tasks|length }} task(s)</h3>
+    {% for task in tasks %}
+    {% include 'partials/_task_card.html' %}
+    {% endfor %}
+    {% else %}
+    <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
+        No tasks found.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

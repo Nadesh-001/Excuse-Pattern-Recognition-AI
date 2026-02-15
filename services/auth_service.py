@@ -1,125 +1,178 @@
-from repository.users_repo import get_user_by_email, create_user
-from utils.hashing import verify_password, hash_password
-from services.activity_service import log_activity
-from services.permission_service import load_user_permissions
-from services.audit_service import log_action, AuditActions
 import re
+import hashlib
 
-def authenticate_user(email, password):
-    """Authenticate user with email and password."""
-    # Input validation
+from flask import current_app
+
+from repository.users_repo import (
+    get_user_by_email,
+    get_user_by_id,
+    create_user,
+    update_password_hash,
+    count_admins,
+)
+from utils.hashing import verify_password, hash_password, pwd_context
+from services.activity_service import log_activity
+from services.audit_service import log_action, AuditActions
+
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+_EMAIL_RE       = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+_MIN_PW_LENGTH  = 8
+_DUMMY_HASH     = hash_password("__timing_guard_dummy__")  # see authenticate_user
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _log_email_hash(email: str) -> str:
+    """One-way truncated hash of an email for safe logging (not reversible)."""
+    return hashlib.sha256(email.lower().encode()).hexdigest()[:12]
+
+
+def _rehash_if_needed(user_id: int, password: str, current_hash: str) -> None:
+    """Transparently upgrade the stored hash if the policy has changed."""
+    if pwd_context.needs_update(current_hash):
+        current_app.logger.info("Rehashing password for user_id=%s", user_id)
+        update_password_hash(user_id, hash_password(password))
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def authenticate_user(email: str, password: str):
+    """
+    Authenticate a user by email and password.
+
+    Returns the user dict on success, or None on any authentication failure.
+    Raises ValueError for structurally invalid inputs.
+
+    Timing note: verify_password is always called (against a dummy hash when
+    the user doesn't exist) to prevent user-enumeration via response time.
+    """
     if not email or not password:
         raise ValueError("Email and password are required")
-    
-    # Clean inputs
-    email = email.strip()
-    password = password.strip()
-    
-    user = get_user_by_email(email)
-    
-    if not user:
-        print(f"⚠️ Login attempt for non-existent user: {email}")
-        return None
-    
-    # Check active status
-    if not user.get('active_status', True):
-        print(f"⚠️ Login attempt for deactivated account: {email}")
-        raise ValueError("Account deactivated. Please contact administrator.")
-        
-    # Passlib verify
-    try:
-        if verify_password(password, user['password_hash']):
-            log_activity(user['id'], "LOGIN", f"User {user['full_name']} logged in")
-            
-            # 🚀 OPTIMIZATION: Check if hash needs update (e.g. reducing rounds from 12 to 10)
-            from utils.hashing import pwd_context, hash_password
-            if pwd_context.needs_update(user['password_hash']):
-                print(f"🔄 Migrating password hash for user {user['id']} to faster complexity...")
-                new_hash = hash_password(password)
-                from repository.users_repo import update_password_hash
-                update_password_hash(user['id'], new_hash)
-            
-            # Load permissions into session (RBAC)
-            import streamlit as st
-            st.session_state.user_role = user['role']
-            st.session_state.user_id = user['id']
-            st.session_state.org_id = user.get('org_id')
-            load_user_permissions()
-            
-            # Audit log
-            log_action(AuditActions.USER_LOGIN, f"Successful login from {email}")
-            
-            print(f"✅ Successful login: {email}")
-            return user
-        else:
-            print(f"⚠️ Failed login attempt: {email} (incorrect password)")
-    except Exception as e:
-        print(f"Auth Error: {e}")
-        
-    return None
 
-def register_user(full_name, email, password, role='employee', org_name=None, org_id=None):
-    """Register a new user with single-admin policy and organization support."""
-    from repository.users_repo import count_admins, get_or_create_org, create_user as repo_create_user
-    
-    # Input validation
+    email = email.strip()
+    # Do NOT strip the password — leading/trailing spaces are valid characters.
+
+    user = get_user_by_email(email)
+
+    if not user:
+        # Run a dummy verification to equalise response time.
+        verify_password(password, _DUMMY_HASH)
+        current_app.logger.warning(
+            "Login attempt for unknown email hash=%s", _log_email_hash(email)
+        )
+        return None
+
+    if not user.get('active_status', True):
+        verify_password(password, _DUMMY_HASH)   # equalise timing even for inactive accounts
+        current_app.logger.warning(
+            "Login attempt on deactivated account user_id=%s", user['id']
+        )
+        raise ValueError("Account deactivated. Please contact your administrator.")
+
+    if not verify_password(password, user['password_hash']):
+        current_app.logger.warning(
+            "Failed login — incorrect password user_id=%s", user['id']
+        )
+        return None
+
+    # Successful authentication.
+    _rehash_if_needed(user['id'], password, user['password_hash'])
+    log_activity(user['id'], "LOGIN", f"User {user['full_name']} logged in")
+    log_action(AuditActions.USER_LOGIN, f"Successful login user_id={user['id']}")
+    current_app.logger.info("Successful login user_id=%s", user['id'])
+    return user
+
+
+def register_user(
+    full_name: str,
+    email: str,
+    password: str,
+    role: str = 'employee',
+    job_role: str | None = None,
+) -> tuple[bool, str]:
+    """
+    Register a new user.
+
+    Enforces a single-admin policy: at most one account with role='admin'
+    may exist at any time.
+
+    Returns (True, success_message) or (False, error_message).
+    """
+    # --- Input validation ---
     if not full_name or not full_name.strip():
         return False, "Full name is required"
-    
-    if not email or not email.strip():
-        return False, "Email is required"
-    
-    # Email format validation
-    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    if not re.match(email_regex, email):
-        return False, "Invalid email format"
-    
-    # Password strength validation
-    if not password or len(password) < 6:
-        return False, "Password must be at least 6 characters long"
-    
-    # 🔴 GLOBAL ADMIN CHECK (Restored)
-    if role == 'admin':
-        admin_count = count_admins()
-        if admin_count >= 1:
-            return False, "System already has an Admin account. Only one global admin is allowed."
-            
-    # Organization Handling
-    final_org_id = None
-    if org_id:
-        final_org_id = org_id
-    elif org_name:
-        try:
-            final_org_id = get_or_create_org(org_name)
-        except Exception as e:
-            return False, f"Organization error: {str(e)}"
-    
-    # For now, if no org provided and not admin, default to a generic one or fail?
-    # In this strict mode, we should require org. But for backward compatibility with existing calls...
-    # If role is ADMIN, they typically define the org name.
-    if not final_org_id and role == 'admin':
-         # First admin defines the org
-         if not org_name:
-             # Fallback or error? Let's use 'My Organization' as default for first admin
-             final_org_id = get_or_create_org("Primary Organization")
-             
-    if not final_org_id:
-        # If still no org ID, use default 1 (migration created Default Org)
-        # Check if default org exists (assumed ID 1 from migration)
-        final_org_id = 1 
 
-    # Check if exists
+    email = email.strip() if email else ""
+    if not email:
+        return False, "Email is required"
+    if not _EMAIL_RE.match(email):
+        return False, "Invalid email format"
+
+    if not password or len(password) < _MIN_PW_LENGTH:
+        return False, f"Password must be at least {_MIN_PW_LENGTH} characters"
+
+    # --- Business rules ---
+    if role == 'admin' and count_admins() >= 1:
+        return False, "A global admin account already exists. Only one is permitted."
+
     if get_user_by_email(email):
-        return False, "User with this email already exists"
-        
+        return False, "An account with this email already exists"
+
+    # --- Persist ---
     try:
-        hashed = hash_password(password)
-        # We need to import create_user from repo (renamed locally to avoid conflict)
-        user_id = repo_create_user(full_name, email, hashed, role, org_id=final_org_id)
-        print(f"✅ New user registered: {email} (ID: {user_id}, Role: {role}, Org: {final_org_id})")
+        hashed  = hash_password(password)
+        user_id = create_user(full_name, email, hashed, role, job_role=job_role)
+        current_app.logger.info(
+            "New user registered user_id=%s role=%s", user_id, role
+        )
         return True, "User registered successfully"
-    except ValueError as ve:
-        return False, str(ve)
+    except ValueError as e:
+        return False, str(e)
     except Exception as e:
-        print(f"❌ Registration error for {email}: {e}")
-        return False, f"Registration failed: {str(e)}"
+        current_app.logger.error("Registration error email_hash=%s: %s", _log_email_hash(email), e)
+        return False, "Registration failed. Please try again."
+
+
+def change_user_password(
+    user_id: int,
+    current_password: str,
+    new_password: str,
+    confirm_password: str,
+) -> tuple[bool, str]:
+    """
+    Change a user's password after verifying their current one.
+
+    Returns (True, success_message) or (False, error_message).
+    """
+    if not current_password or not new_password or not confirm_password:
+        return False, "All fields are required"
+
+    if new_password != confirm_password:
+        return False, "New passwords do not match"
+
+    if len(new_password) < _MIN_PW_LENGTH:
+        return False, f"New password must be at least {_MIN_PW_LENGTH} characters"
+
+    user = get_user_by_id(user_id)
+    if not user:
+        return False, "User not found"
+
+    if not verify_password(current_password, user['password_hash']):
+        return False, "Current password is incorrect"
+
+    try:
+        update_password_hash(user_id, hash_password(new_password))
+        log_activity(user_id, "CHANGE_PASSWORD", "User changed their password")
+        current_app.logger.info("Password changed user_id=%s", user_id)
+        return True, "Password updated successfully"
+    except Exception as e:
+        current_app.logger.error("Password change error user_id=%s: %s", user_id, e)
+        return False, "An error occurred while updating your password"

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Excuse Pattern Recognition AI{% endblock %}
+
+{% block content %}
+<div class="landing-container">
+    <div class="landing-content">
+        <!-- Badge -->
+        <div class="landing-badge">
+            <span class="badge-new">New</span>
+            <span class="badge-text">AI-Powered Task Management System</span>
+        </div>
+
+        <!-- Title -->
+        <h1 class="landing-title">
+            The smart way to analyze <br> excuses and patterns
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="landing-subtitle">
+            Advanced AI to uncover insights and identify behavior patterns, excuses included.
+        </p>
+
+        <!-- Logo -->
+        <div class="landing-visual">
+            <img src="{{ url_for('static', filename='images/logo_theme.png') }}" alt="Excuse Pattern AI Logo"
+                class="landing-logo">
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="cta-group">
+            <a href="{{ url_for('register') }}" class="btn-primary start-btn">Get Started</a>
+            <div class="login-link">
+                Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

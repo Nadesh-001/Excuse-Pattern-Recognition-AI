@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Search - Excuse Pattern AI{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="margin-bottom: 1rem; font-size: 2rem; font-weight: 700;">Search Patterns</h1>
+
+    <!-- Search Bar & Filters -->
+    <div class="card" style="margin-bottom: 2rem; padding: 1.5rem;">
+        <form action="{{ url_for('universal_search') }}" method="GET">
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: stretch;">
+                <div style="flex-grow: 1; position: relative;">
+                    <svg style="position: absolute; left: 1rem; top: 1.1rem; color: var(--text-muted); z-index: 10;"
+                        width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" name="q" value="{{ query }}" placeholder="Search tasks, excuses, or patterns..."
+                        style="width: 100%; padding: 1rem 1rem 1rem 3rem; border-radius: 0.5rem; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); font-size: 1.1rem; outline: none; box-sizing: border-box;">
+                </div>
+                <button type="submit" class="btn-primary"
+                    style="padding: 0 2.5rem; font-weight: 800; width: auto; margin: 0; white-space: nowrap;">SEARCH</button>
+            </div>
+
+            <!-- Quick Filter Pills -->
+            <div style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem;">
+                {% for filter in ['Pending', 'Completed', 'High Risk', 'Weather', 'Network', 'Health'] %}
+                <button type="button" onclick="setQuery('{{ filter }}')"
+                    style="padding: 0.25rem 1rem; border: 1px solid var(--border); border-radius: 99px; background: rgba(255,255,255,0.05); color: var(--text-secondary); cursor: pointer; white-space: nowrap; transition: all 0.2s;"
+                    onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.borderColor='var(--primary)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='var(--text-secondary)'; this.style.borderColor='var(--border)'">
+                    {{ filter }}
+                </button>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+
+    {% if not query %}
+    <!-- Empty State / Trending -->
+    <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+        <h3 style="color: var(--text-main); margin-bottom: 1.5rem;">Trending Searches</h3>
+        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            {% if trending %}
+            {% for term in trending %}
+            <a href="{{ url_for('universal_search', q=term) }}"
+                style="text-decoration: none; color: var(--primary); background: rgba(59, 130, 246, 0.1); padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(59, 130, 246, 0.2);">
+                🔥 {{ term }}
+            </a>
+            {% endfor %}
+            {% else %}
+            <p>Start typing to discover patterns...</p>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+
+    <!-- RESULTS -->
+    <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem;">Results for "<span style="color: var(--primary);">{{ query
+            }}</span>"</h2>
+
+    <div style="display: grid; gap: 2rem;">
+
+        <!-- USERS RESULTS -->
+        {% if users %}
+        <div>
+            <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase;">
+                Users</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                {% for u in users %}
+                <div class="card" style="display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        👤</div>
+                    <div>
+                        <div style="font-weight: 600;">{{ u.full_name }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ u.role }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TASKS RESULTS -->
+        {% if tasks %}
+        <div>
+            <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase;">
+                Tasks</h3>
+            <div style="display: grid; gap: 1rem;">
+                {% for t in tasks %}
+                <div class="card"
+                    style="border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 style="margin: 0 0 0.25rem 0;">{{ t.title }}</h4>
+                        <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">{{ t.description }}</p>
+                    </div>
+                    <span
+                        style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">
+                        {{ t.status }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- DELAYS RESULTS -->
+        {% if delays %}
+        <div>
+            <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase;">
+                Delay Analysis</h3>
+            <div style="display: grid; gap: 1rem;">
+                {% for d in delays %}
+                <div class="card"
+                    style="border-left: 4px solid {% if d.risk_level == 'High' %}#ef4444{% elif d.risk_level == 'Medium' %}#f59e0b{% else %}#10b981{% endif %};">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 600;">{{ d.task_title }}</span>
+                        <span
+                            style="font-size: 0.8rem; font-weight: 600; color: {% if d.risk_level == 'High' %}#ef4444{% elif d.risk_level == 'Medium' %}#f59e0b{% else %}#10b981{% endif %}">
+                            {{ d.risk_level }} Risk
+                        </span>
+                    </div>
+                    <p style="margin: 0; color: var(--text-secondary); font-style: italic;">"{{ d.reason_text }}"</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not tasks and not delays and not users %}
+        <div
+            style="text-align: center; padding: 2rem; background: var(--bg-card); border-radius: 1rem; border: 1px dashed var(--border);">
+            <p style="color: var(--text-muted);">No results found. Try broader terms like "work" or "delay".</p>
+        </div>
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+    <script>
+        function setQuery(text) {
+            document.querySelector('input[name="q"]').value = text;
+            document.querySelector('form').submit();
+        }
+    </script>
+    {% endblock %}
